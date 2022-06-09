@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 # send all system info to mqtt
 
 import logging, time, os
@@ -26,6 +28,11 @@ PVE_NODE_NAME = os.getenv("PVE_NODE_NAME", default="pve")
 PVE_HOST = os.getenv("PVE_HOST", default="localhost")
 PVE_USER = os.getenv("PVE_USER", default="root")
 PVE_PASSWORD = os.getenv("PVE_PASSWORD")
+
+MQTT_HOST = os.getenv("MQTT_HOST", default="localhost")
+MQTT_PORT = os.getenv("MQTT_PORT", default=1883)
+MQTT_USER = os.getenv("MQTT_USER", default=None)
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", default=None)
 
 ###################################
 
@@ -68,7 +75,10 @@ class System2Mqtt(object):
     def __init__(self):
         logging.debug("")
 
-        self.myqtt = Myqtt()
+        self.myqtt = Myqtt(host=MQTT_HOST,
+                            port=MQTT_PORT,
+                            username=MQTT_USER,
+                            password=MQTT_PASSWORD)
 
         self.myqtt.lwt_topic = lwt_topic
         self.myqtt.topic_callbacks = self.__get_subscription_calbacks()

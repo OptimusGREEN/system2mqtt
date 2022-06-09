@@ -1,10 +1,9 @@
+#! /usr/bin/python3
 
 from subprocess import call
 from time import sleep
 import logging, os
 from optilibs.system_info import Platform, get_hostname
-from optilibs.secret import Secret
-secret = Secret()
 
 hostname = get_hostname()
 
