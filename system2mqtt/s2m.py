@@ -1,8 +1,7 @@
-#! /usr/bin/python3
-
+#!/Users/john/Dev/Venv/DEVenv/bin/python3
 # send all system info to mqtt
 
-import logging, time, os
+import logging, time, os, sys
 from decimal import Decimal
 from dotenv import load_dotenv
 
@@ -13,8 +12,10 @@ from libs.optimox import OptiMOX, prox_auth
 
 hostname = get_hostname()
 
+
+
 ############ ENV VARS #############
-load_dotenv()
+load_dotenv(sys.argv[1])
 
 COMPUTER_NAME = os.getenv("COMPUTER_NAME", default=hostname)
 LOG_DIR = os.getenv("LOG_DIR", default="./logs")
@@ -22,6 +23,7 @@ LOG_FILENAME = os.getenv("LOG_FILENAME", default="system2mqtt.log")
 OLD_LOG_FILENAME = os.getenv("OLD_LOG_FILENAME", default="old_system2mqtt.log")
 MQTT_BASE_TOPIC = os.getenv("MQTT_BASE_TOPIC", default="system2mqtt/{}".format(COMPUTER_NAME))
 PUBLISH_PERIOD = os.getenv("PUBLISH_PERIOD", default=30)
+DEBUG_LOG = os.getenv("DEBUG_LOG", default=False)
 
 PVE_SYSTEM = os.getenv("PVE_SYSTEM", default=False)
 PVE_NODE_NAME = os.getenv("PVE_NODE_NAME", default="pve")
@@ -65,7 +67,7 @@ def setupLogging(DEBUG_MODE=False):
     else:
         logging.basicConfig(filename=log_filename, level=log_level, format=format)
 
-setupLogging(True)
+setupLogging(DEBUG_LOG)
 
 
 ################################################################################################

@@ -1,33 +1,33 @@
-#! /usr/bin/python3
+#!/Users/john/Dev/Venv/DEVenv/bin/python3
 
 from subprocess import call
 from time import sleep
-import logging, os
-from optilibs.system_info import Platform, get_hostname
+import logging, os, sys
+from libs.system_info import Platform, get_hostname
 
 hostname = get_hostname()
 
-filepath = os.path.join(os.path.dirname(__file__), "s2m.py")
+filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "s2m.py")
 
 restart_timer = 2
 
 
-def start_system2mqtt():
+def start_system2mqtt(envfile):
     try:
         logging.info("Starting '{}' script: '{}'".format(hostname, filepath))
-        call(filepath, shell=True)
+        call("{} {}".format(filepath, envfile), shell=True)
         logging.info("Watchdog PID: {}".format(os.getpid()))
     except Exception as e:
         logging.error(e)
         # Script crashed, lets restart it!
         logging.error("Script crashed! Restarting in {} seconds".format(restart_timer))
-        handle_crash()
+        handle_crash(envfile)
 
 
-def handle_crash():
+def handle_crash(envfile):
     sleep(restart_timer)
-    start_system2mqtt()
+    start_system2mqtt(envfile)
 
 
 if __name__ == '__main__':
-    start_system2mqtt()
+    start_system2mqtt(sys.argv[1])

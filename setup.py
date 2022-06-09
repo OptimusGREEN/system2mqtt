@@ -19,13 +19,9 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=['mysql-connector',
-                      'paho-mqtt',
+    install_requires=['paho-mqtt',
                       'psutil',
                       'requests',
-                      'pythonping',
-                      'trakt.py',
-                      'plexapi',
-                      'beautifulsoup4',
+                      'python-dotenv'
         ],
 )
