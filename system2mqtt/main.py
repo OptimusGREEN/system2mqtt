@@ -1,4 +1,4 @@
-#!/Users/john/Dev/Venv/DEVenv/bin/python3
+#!/usr/bin/python3
 
 from subprocess import call
 from time import sleep

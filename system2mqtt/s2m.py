@@ -1,4 +1,4 @@
-#!/Users/john/Dev/Venv/DEVenv/bin/python3
+#!/usr/bin/python3
 # send all system info to mqtt
 
 import logging, time, os, sys
