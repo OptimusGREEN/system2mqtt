@@ -5,9 +5,9 @@ import logging, time, os, sys
 from decimal import Decimal
 from dotenv import load_dotenv
 
-from libs.system_info import get_temps, Platform, get_hostname, get_disks, get_disk_space, get_memory, get_cpu
-from libs.myqtt import Myqtt
-from libs.optimox import OptiMOX, prox_auth
+from system2mqtt.libs.system_info import get_temps, Platform, get_hostname, get_disks, get_disk_space, get_memory, get_cpu
+from system2mqtt.libs.myqtt import Myqtt
+from system2mqtt.libs.optimox import OptiMOX, prox_auth
 
 
 hostname = get_hostname()

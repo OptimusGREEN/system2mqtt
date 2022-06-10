@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="system2mqtt", # Replace with your own username
-    version="0.5.0",
+    version="0.5.1",
     author="OptimusGREEN",
     author_email="root@optimusgreen.com",
     description="send system info to mqtt",
