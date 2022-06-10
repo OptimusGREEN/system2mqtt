@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+# s2m watchdog
+
 from subprocess import call
 from time import sleep
 import logging, os, sys
