@@ -5,7 +5,7 @@
 from subprocess import call
 from time import sleep
 import logging, os, sys
-from system2mqtt.libs.system_info import Platform, get_hostname
+from libs.system_info import Platform, get_hostname
 
 hostname = get_hostname()
 
