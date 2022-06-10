@@ -32,4 +32,7 @@ def handle_crash(envfile):
 
 
 if __name__ == '__main__':
-    start_system2mqtt(sys.argv[1])
+    if len(sys.argv) > 1:
+        start_system2mqtt(sys.argv[1])
+    else:
+        start_system2mqtt(".env")
