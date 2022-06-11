@@ -35,4 +35,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         start_system2mqtt(sys.argv[1])
     else:
-        start_system2mqtt(".env")
+        start_system2mqtt("s2m.conf")

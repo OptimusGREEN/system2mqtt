@@ -23,5 +23,5 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 #PVE_PASSWORD=mysooperdoopersecretpassword123
 
 
-###### rename or copy this file to be called .env or pass its path as an argument when calling run.py
-#### example: python3 system2mqtt/run.py path/to/my/.env
+###### rename or copy this file (to be called) s2m.conf or pass its path as an argument when calling run.py
+#### example: python3 system2mqtt/run.py path/to/my/s2m.conf
