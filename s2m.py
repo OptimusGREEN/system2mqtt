@@ -118,7 +118,7 @@ class System2Mqtt(object):
         while self.myqtt.client.is_connected():
             logging.debug("flag: {}".format(self.myqtt.connected_flag))
             self.publish_all()
-            time.sleep(PUBLISH_PERIOD)
+            time.sleep(int(PUBLISH_PERIOD))
         if self.auto_reconnect:
             logging.info("Reconnecting...")
             self.wait()
