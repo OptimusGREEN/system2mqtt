@@ -1,0 +1,7 @@
+version: "2"
+services:
+  s2m:
+    image: optimusgreen/system2mqtt:latest
+    container_name: system2mqtt
+    volumes:
+      - ./data:/config
