@@ -29,7 +29,7 @@ DEBUG_LOG = os.getenv("DEBUG_LOG", default=False)
 PVE_SYSTEM = os.getenv("PVE_SYSTEM", default=False)
 PVE_NODE_NAME = os.getenv("PVE_NODE_NAME", default="pve")
 PVE_HOST = os.getenv("PVE_HOST", default="localhost")
-PVE_USER = os.getenv("PVE_USER", default="root")
+PVE_USER = os.getenv("PVE_USER", default="root@pam")
 PVE_PASSWORD = os.getenv("PVE_PASSWORD")
 
 MQTT_HOST = os.getenv("MQTT_HOST", default="localhost")
