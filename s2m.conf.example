@@ -19,7 +19,7 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 ##### Below options are required if PVE_SYSTEM is set to true
 #PVE_NODE_NAME=pve                               ### Default: pve                            
 #PVE_HOST=192.168.0.7                            ### Default: localhost
-#PVE_USER=mypveuser                              ### Default: root
+#PVE_USER=root@pam                               ### Default: root@pam
 #PVE_PASSWORD=mysooperdoopersecretpassword123
 
 
