@@ -38,3 +38,5 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 ```
 
 A docker image is also available [here](https://hub.docker.com/repository/docker/optimusgreen/system2mqtt) but is only currently available for access to proxmox api rather than bare metal local system.
+
+This has currently only been tested on linux/macos.
