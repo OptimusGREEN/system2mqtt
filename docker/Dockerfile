@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM debian:stretch
 
 ENV TERM linux
 ENV DEBIAN_FRONTEND noninteractive
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get dist-upgrade -y && apt-get install -y \
 RUN git clone https://github.com/OptimusGREEN/system2mqtt.git \
     && chmod +x system2mqtt/run.py \
     && chmod +x system2mqtt/s2m.py \
-    && pip install -r system2mqtt/deps.txt \
+    && pip3 install -r system2mqtt/deps.txt \
     && mkdir /config
     
 VOLUME /config
