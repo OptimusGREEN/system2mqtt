@@ -10,10 +10,15 @@ import logging
 
 Platform = platform.system()
 
+def set_proc(procpath):
+    psutil.PROCFS_PATH = procpath
+
 def get_hostname():
     return socket.gethostname()
 
-def get_disks(return_type="all"):
+def get_disks(return_type="all", procpath=None):
+    if procpath:
+        set_proc(procpath)
     disks = psutil.disk_partitions(all=False)
     internal_disks = []
     external_disks = []
@@ -46,7 +51,9 @@ def get_disks(return_type="all"):
     else:
         raise Exception("Invalid return type received. Options are 'all', 'internal', 'external'")
 
-def get_disk_space(mount_path, return_type='percent'):
+def get_disk_space(mount_path, return_type='percent', procpath=None):
+    if procpath:
+        set_proc(procpath)
     space_dict = {}
     space = psutil.disk_usage(mount_path)
     space_dict["total"] = space.total
@@ -55,7 +62,9 @@ def get_disk_space(mount_path, return_type='percent'):
     space_dict["percent"] = space.percent
     return space_dict.get(return_type)
 
-def get_memory(return_type='percent'):
+def get_memory(return_type='percent', procpath=None):
+    if procpath:
+        set_proc(procpath)
     mem_dict = {}
     mem = psutil.virtual_memory()
     try:
@@ -92,7 +101,7 @@ def get_memory(return_type='percent'):
         mem_dict["wired"] = ""
     return mem_dict.get(return_type)
 
-def get_temps():
+def get_temps(procpath=None):
     if Platform == 'Darwin':
         try:
             task = subprocess.check_output(
@@ -103,14 +112,26 @@ def get_temps():
             temps = None
     else:
         try:
+            if procpath:
+                set_proc(procpath)
             temps = psutil.sensors_temperatures()
         except:
             temps = None
     return temps
 
-def get_cpu():
+def get_cpu(procpath=None):
+    if procpath:
+        set_proc(procpath)
     cpu = psutil.cpu_percent(interval=1)
     return cpu
+
+def get_argon_fan_speed():
+    with open("/tmp/fanspeed.txt") as e:
+        speed = e.read()
+    try:
+        return int(float(speed))
+    except FileNotFoundError:
+        return None
 
 ###### MAC SPECIFIC #####
 

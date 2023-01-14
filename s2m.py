@@ -4,55 +4,27 @@
 
 import logging, time, os, sys
 from decimal import Decimal
-from dotenv import load_dotenv
-
-from libs.system_info import get_temps, Platform, get_hostname, get_disks, get_disk_space, get_memory, get_cpu
+from libs.system_info import get_temps, Platform, get_hostname, get_disks, get_disk_space, get_memory, get_cpu, set_proc, get_argon_fan_speed
 from libs.myqtt import Myqtt
 from libs.optimox import OptiMOX, prox_auth
-
+from libs.parser import Parser
 
 hostname = get_hostname()
 
 
 
-############ ENV VARS #############
-load_dotenv(sys.argv[1])
-
-COMPUTER_NAME = os.getenv("COMPUTER_NAME", default=hostname)
-LOG_DIR = os.getenv("LOG_DIR", default="./logs")
-LOG_FILENAME = os.getenv("LOG_FILENAME", default="system2mqtt.log")
-OLD_LOG_FILENAME = os.getenv("OLD_LOG_FILENAME", default="old_system2mqtt.log")
-MQTT_BASE_TOPIC = os.getenv("MQTT_BASE_TOPIC", default="system2mqtt/{}".format(COMPUTER_NAME))
-PUBLISH_PERIOD = os.getenv("PUBLISH_PERIOD", default=30)
-DEBUG_LOG = os.getenv("DEBUG_LOG", default=False)
-
-PVE_SYSTEM = os.getenv("PVE_SYSTEM", default=False)
-PVE_NODE_NAME = os.getenv("PVE_NODE_NAME", default="pve")
-PVE_HOST = os.getenv("PVE_HOST", default="localhost")
-PVE_USER = os.getenv("PVE_USER", default="root@pam")
-PVE_PASSWORD = os.getenv("PVE_PASSWORD")
-
-MQTT_HOST = os.getenv("MQTT_HOST", default="localhost")
-MQTT_PORT = os.getenv("MQTT_PORT", default=1883)
-MQTT_USER = os.getenv("MQTT_USER", default=None)
-MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", default=None)
-
-###################################
-
-if Platform == "Darwin":
-    macos = True
-    PVE_SYSTEM = False
-else:
-    macos = False
-
-lwt_topic = MQTT_BASE_TOPIC + "/LWT"
-
-
-def setupLogging(DEBUG_MODE=False):
-    log_dir = LOG_DIR
-    log_filename = os.path.join(log_dir, LOG_FILENAME)
-    old_log_filename = os.path.join(log_dir, OLD_LOG_FILENAME)
-    os.makedirs(log_dir, exist_ok=True)
+def setupLogging(DEBUG_MODE=False, conf=None):
+    config = conf
+    log_dir = config.LOG_DIR
+    if log_dir.startswith("./"):
+        log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), log_dir.split("./")[1])
+    print("Log Dir: ", log_dir)
+    log_filename = os.path.join(log_dir, config.LOG_FILENAME)
+    old_log_filename = os.path.join(log_dir, config.OLD_LOG_FILENAME)
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+    except Exception as e:
+        print(e)
     if os.path.exists(log_filename):
         if os.path.exists(old_log_filename):
             try: os.remove(old_log_filename)
@@ -68,28 +40,32 @@ def setupLogging(DEBUG_MODE=False):
     else:
         logging.basicConfig(filename=log_filename, level=log_level, format=format)
 
-setupLogging(DEBUG_LOG)
-
 
 ################################################################################################
 
 class System2Mqtt(object):
 
-    def __init__(self):
-        logging.debug("")
+    def __init__(self, conf):
 
-        self.myqtt = Myqtt(host=MQTT_HOST,
-                            port=MQTT_PORT,
-                            username=MQTT_USER,
-                            password=MQTT_PASSWORD)
+        print("Getting config from:\n", conf)
 
-        self.myqtt.lwt_topic = lwt_topic
+        self.config = Parser(conf)
+        setupLogging(self.config.DEBUG_LOG, self.config)
+        logging.debug("logging has been set up")
+        self.lwt_topic = self.config.MQTT_BASE_TOPIC + "/LWT"
+
+        self.myqtt = Myqtt(host=self.config.MQTT_HOST,
+                            port=self.config.MQTT_PORT,
+                            username=self.config.MQTT_USER,
+                            password=self.config.MQTT_PASSWORD)
+
+        self.myqtt.lwt_topic = self.lwt_topic
         self.myqtt.topic_callbacks = self.__get_subscription_calbacks()
 
-        if PVE_SYSTEM:
-            self.pve = OptiMOX(prox_auth(PVE_HOST,
-                                        PVE_USER,
-                                        PVE_PASSWORD))
+        if self.config.PVE_SYSTEM:
+            self.pve = OptiMOX(prox_auth(self.config.PVE_HOST,
+                                        self.config.PVE_USER,
+                                        self.config.PVE_PASSWORD))
 
         self.auto_reconnect = True
 
@@ -97,8 +73,8 @@ class System2Mqtt(object):
 
     def __get_subscription_calbacks(self):
         logging.debug("")
-        sub_dict = {MQTT_BASE_TOPIC + "/tele/PUBLISH_PERIOD": self.s2m_set_publish_period,
-                    MQTT_BASE_TOPIC + "/callbacks/s2m_quit": self.quit_s2m}
+        sub_dict = {self.config.MQTT_BASE_TOPIC + "/tele/PUBLISH_PERIOD": self.s2m_set_publish_period,
+                    self.config.MQTT_BASE_TOPIC + "/callbacks/s2m_quit": self.quit_s2m}
         return sub_dict
 
     def run(self):
@@ -114,11 +90,11 @@ class System2Mqtt(object):
         self.start_publish_loop()
 
     def start_publish_loop(self):
-        logging.info("Publish period is set to {} seconds.".format(PUBLISH_PERIOD))
+        logging.info("Publish period is set to {} seconds.".format(self.config.PUBLISH_PERIOD))
         while self.myqtt.client.is_connected():
             logging.debug("flag: {}".format(self.myqtt.connected_flag))
             self.publish_all()
-            time.sleep(int(PUBLISH_PERIOD))
+            time.sleep(int(self.config.PUBLISH_PERIOD))
         if self.auto_reconnect:
             logging.info("Reconnecting...")
             self.wait()
@@ -127,10 +103,10 @@ class System2Mqtt(object):
 
     def publish_mount_state(self):
         logging.debug("")
-        base = MQTT_BASE_TOPIC + "/disks/mount/"
+        base = self.config.MQTT_BASE_TOPIC + "/disks/mount/"
         try:
-            if not PVE_SYSTEM:
-                disks = get_disks('internal')
+            if not self.config.PVE_SYSTEM:
+                disks = get_disks('internal', procpath=self.config.PROCHOST)
                 for d in disks:
                     if d == "/":
                         label = "root"
@@ -139,8 +115,8 @@ class System2Mqtt(object):
                     final_topic = base + label
                     logging.info("{} is mounted - publishing to '{}'".format(label, final_topic))
                     self.myqtt.publish(final_topic, "mounted")
-            elif PVE_SYSTEM:
-                storage_data = self.pve.getNodeStorage(PVE_NODE_NAME)["data"]
+            elif self.config.PVE_SYSTEM:
+                storage_data = self.pve.getNodeStorage(self.config.PVE_NODE_NAME)["data"]
                 for storage in storage_data:
                     name = storage["storage"]
                     state = storage["active"]
@@ -154,20 +130,20 @@ class System2Mqtt(object):
 
     def publish_disk_space(self):
         logging.debug("")
-        base = MQTT_BASE_TOPIC + "/disks/storage/"
+        base = self.config.MQTT_BASE_TOPIC + "/disks/storage/"
         try:
-            if not PVE_SYSTEM:
-                disks = get_disks()
+            if not self.config.PVE_SYSTEM:
+                disks = get_disks(procpath=self.config.PROCHOST)
                 for d in disks:
-                    space = get_disk_space(d)
+                    space = get_disk_space(d, procpath=self.config.PROCHOST)
                     if d == "/":
                         label = "root"
                     else:
                         label = d.split("/")[-1]
                     final_topic = base + label
                     self.myqtt.publish(final_topic, space)
-            elif PVE_SYSTEM:
-                storage_data = self.pve.getNodeStorage(PVE_NODE_NAME)["data"]
+            elif self.config.PVE_SYSTEM:
+                storage_data = self.pve.getNodeStorage(self.config.PVE_NODE_NAME)["data"]
                 logging.debug(storage_data)
                 for storage in storage_data:
                     name = storage["storage"]
@@ -182,22 +158,22 @@ class System2Mqtt(object):
 
     def publish_cpu_temp(self):
         logging.debug("")
-        final_topic = MQTT_BASE_TOPIC + "/cpu/temperature"
+        final_topic = self.config.MQTT_BASE_TOPIC + "/cpu/temperature"
         try:
-            if macos:
+            if self.config.MACOS:
                 try:
-                    dec = Decimal(get_temps())
+                    dec = Decimal(get_temps(procpath=self.config.PROCHOST))
                     temp = str(round(dec, 1))
                 except Exception as e:
                     logging.warning(e)
-                    temp = get_temps()
+                    temp = get_temps(procpath=self.config.PROCHOST)
                 logging.info("CPU temperature: {}°C".format(temp))
                 self.myqtt.publish(final_topic, temp)
             else:
                 try:
-                    temps = get_temps()["coretemp"]
+                    temps = get_temps(procpath=self.config.PROCHOST)["coretemp"]
                 except:
-                    temps = get_temps()["cpu_thermal"]
+                    temps = get_temps(procpath=self.config.PROCHOST)["cpu_thermal"]
                 c_list = []
                 for temp in temps:
                     c_list.append(temp.current)
@@ -209,14 +185,14 @@ class System2Mqtt(object):
 
     def publish_cpu_usage(self):
         logging.debug("")
-        final_topic = MQTT_BASE_TOPIC + "/cpu/usage"
+        final_topic = self.config.MQTT_BASE_TOPIC + "/cpu/usage"
         try:
-            if not PVE_SYSTEM:
-                cpu = get_cpu()
+            if not self.config.PVE_SYSTEM:
+                cpu = get_cpu(procpath=self.config.PROCHOST)
                 logging.info("CPU usage: {}%".format(cpu))
                 self.myqtt.publish(final_topic, cpu)
-            elif PVE_SYSTEM:
-                cpu = self.pve.getNodeStatus(PVE_NODE_NAME)["data"]["cpu"]
+            elif self.config.PVE_SYSTEM:
+                cpu = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["cpu"]
                 pct = int(float(cpu) * 100)
                 logging.info("CPU usage: {}%".format(pct))
                 if pct > 0:
@@ -227,15 +203,15 @@ class System2Mqtt(object):
             logging.error(e)
 
     def publish_ram(self):
-        logging.debug("")
-        final_topic = MQTT_BASE_TOPIC + "/memory"
+        logging.debug("Getting ram")
+        final_topic = self.config.MQTT_BASE_TOPIC + "/memory"
         try:
-            if not PVE_SYSTEM:
-                mem = get_memory()
+            if not self.config.PVE_SYSTEM:
+                mem = get_memory(procpath=self.config.PROCHOST)
                 logging.info("Memory Used: {}%".format(mem))
                 self.myqtt.publish(final_topic, mem)
-            elif PVE_SYSTEM:
-                ram_dict = self.pve.getNodeStatus(PVE_NODE_NAME)["data"]["memory"]
+            elif self.config.PVE_SYSTEM:
+                ram_dict = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["memory"]
                 used = float(ram_dict["used"])
                 total = float(ram_dict["total"])
                 pct = int((used / total) * 100)
@@ -245,15 +221,27 @@ class System2Mqtt(object):
                 logging.warning("Not MacOS or PVE system")
         except Exception as e:
             logging.error(e)
+    
+    def publish_fan_speed(self):
+        if self.config.ARGONFAN:
+            logging.debug("Getting fan speed")
+            final_topic = self.config.MQTT_BASE_TOPIC + "/fan_speed"
+            try:
+                speed = get_argon_fan_speed()
+                logging.info("Fan Speed: {}%".format(speed))
+                self.myqtt.publish(final_topic, speed)
+            except Exception as e:
+                logging.error(e)
 
     def publish_all(self):
         logging.debug("...publishing")
-        self.myqtt.publish(lwt_topic, 'online')
+        self.myqtt.publish(self.lwt_topic, 'online')
         funcs = [self.publish_mount_state,
                  self.publish_disk_space,
                  self.publish_cpu_temp,
                  self.publish_cpu_usage,
-                 self.publish_ram]
+                 self.publish_ram,
+                 self.publish_fan_speed]
         for f in funcs:
             f()
 
@@ -280,8 +268,8 @@ class System2Mqtt(object):
         if int(message.payload.decode("utf-8")) == 1:
             self.auto_reconnect =False
             logging.info("Quit called....")
-            self.myqtt.publish(MQTT_BASE_TOPIC + "/callbacks/s2m_quit", "")
-            self.myqtt.publish(lwt_topic, "exited", retain=True)
+            self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/s2m_quit", "")
+            self.myqtt.publish(self.lwt_topic, "exited", retain=True)
             client.loop_stop()
             client.disconnect()
 
@@ -289,5 +277,11 @@ class System2Mqtt(object):
 
 
 if __name__ == '__main__':
-    s2m = System2Mqtt()
+    try:
+        config = sys.argv[1]
+    except:
+        config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "s2m.conf")
+    print("conf: ", config)
+    s2m = System2Mqtt(config)
+    time.sleep(1)
     s2m.run()
