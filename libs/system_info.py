@@ -50,9 +50,9 @@ def get_disk_space(mount_path, return_type='percent', procpath=None):
         pools = z.get_pools()
         for k, v in pools.items():
             if mount_path == z.get_mountpoint(v):
-                storage = z.get_storage(v)
+                storage = z.get_storage_percent(v)
                 logging.debug("mp: {} - {}%".format(mount_path, storage))
-                space_dict["percent"] = z.get_storage(v)
+                space_dict["percent"] = storage
                 return space_dict.get(return_type)
     except Exception as e:
         logging.warning(e)

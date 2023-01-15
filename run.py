@@ -35,4 +35,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         start_system2mqtt(sys.argv[1])
     else:
-        start_system2mqtt("s2m.conf")
+        config = os.path.join(os.path.dirname(os.path.realpath(__file__)), "s2m.conf")
+        start_system2mqtt(config)

@@ -1,4 +1,5 @@
 import zfslib as zfs
+import logging
 
 class OptiZFS(object):
     def __init__(self, host="localhost"):
@@ -19,8 +20,15 @@ class OptiZFS(object):
     def __get_property(self, pool, property):
         return pool.get_property(property)
 
-    def get_storage(self, pool):
+    def get_capacity(self, pool):
         return self.__get_property(pool, "capacity")
+
+    def get_storage_percent(self, pool):
+        total = float(self.__get_property(pool, "size"))
+        used = float(self.__get_property(pool, "allocated"))
+        percent = round((used * 100) / total, 1)
+        logging.debug("######################################## \n\n\ntotal: {}\nused: {}\npercent: {}\n\n\n".format(total, used, percent))
+        return float(percent)
 
     def get_mounted(self, pool):
         return self.__get_property(pool, "mounted")
