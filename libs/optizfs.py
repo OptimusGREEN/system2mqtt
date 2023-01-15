@@ -30,11 +30,11 @@ class OptiZFS(object):
 
 
 # ##################### TESTING
-z = OptiZFS()
-pools = z.get_pools()
-for k,v in pools.items():
-    print("Name: ", k)
-    print("Mountpoint: ", z.get_mountpoint(v))
-    print("Mounted: ", z.get_mounted(v))
-    print("Mountpoint: ", z.get_storage(v))
-    print("\n")
+# z = OptiZFS()
+# pools = z.get_pools()
+# for k,v in pools.items():
+#     print("Name: ", k)
+#     print("Mountpoint: ", z.get_mountpoint(v))
+#     print("Mounted: ", z.get_mounted(v))
+#     print("Storage: ", z.get_storage(v))
+#     print("\n")

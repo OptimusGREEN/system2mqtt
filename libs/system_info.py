@@ -22,6 +22,7 @@ def get_disks(return_type="all", procpath=None):
     disks = psutil.disk_partitions(all=False)
     internal_disks = []
     external_disks = []
+    all_disks = []
     if Platform == 'Darwin':
         imac_internals = ["/", "/Volumes/Storage HDD"]
         macbook_internals = ["/"]
@@ -36,6 +37,7 @@ def get_disks(return_type="all", procpath=None):
                 external_disks.append(d.mountpoint)
     else:
         for d in disks:
+            all_disks.append(d.mountpoint)
             if "/mnt/" in d.mountpoint:
                 internal_disks.append(d.mountpoint)
             if "/" == d.mountpoint:
@@ -43,7 +45,7 @@ def get_disks(return_type="all", procpath=None):
             if "/media/" in d.mountpoint:
                 external_disks.append(d.mountpoint)
     if return_type == 'all':
-        return (internal_disks + external_disks)
+        return all_disks
     elif return_type == 'internal':
         return internal_disks
     elif return_type == "external":
