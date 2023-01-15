@@ -7,6 +7,7 @@ import logging
 # cpu_pct = psutil.cpu_percent(interval=0.1, percpu=False)
 # load = psutil.getloadavg()
 # mem = psutil.virtual_memory()
+from libs.optizfs import OptiZFS
 
 Platform = platform.system()
 
@@ -16,53 +17,52 @@ def set_proc(procpath):
 def get_hostname():
     return socket.gethostname()
 
-def get_disks(return_type="all", procpath=None):
+def get_disks(procpath=None):
     if procpath:
         set_proc(procpath)
     disks = psutil.disk_partitions(all=False)
-    internal_disks = []
-    external_disks = []
     all_disks = []
+    try:
+        z = OptiZFS()
+        pools = z.get_pools()
+        for k, v in pools.items():
+            all_disks.append(z.get_mountpoint(v))
+    except Exception as e:
+        logging.warning(e)
     if Platform == 'Darwin':
-        imac_internals = ["/", "/Volumes/Storage HDD"]
-        macbook_internals = ["/"]
         excluded = ['/private/var/vm', "/Data"]
         for d in disks:
             if d in excluded:
                 disks.remove(d)
         for d in disks:
-            if d.mountpoint in imac_internals or macbook_internals:
-                internal_disks.append(d.mountpoint)
-            if d.mountpoint not in imac_internals or macbook_internals and d.mountpoint.startswith("/Volumes"):
-                external_disks.append(d.mountpoint)
+            all_disks.append(d.mountpoint)
     else:
         for d in disks:
             all_disks.append(d.mountpoint)
-            if "/mnt/" in d.mountpoint:
-                internal_disks.append(d.mountpoint)
-            if "/" == d.mountpoint:
-                internal_disks.append(d.mountpoint)
-            if "/media/" in d.mountpoint:
-                external_disks.append(d.mountpoint)
-    if return_type == 'all':
-        return all_disks
-    elif return_type == 'internal':
-        return internal_disks
-    elif return_type == "external":
-        return external_disks
-    else:
-        raise Exception("Invalid return type received. Options are 'all', 'internal', 'external'")
+    return all_disks
 
 def get_disk_space(mount_path, return_type='percent', procpath=None):
     if procpath:
         set_proc(procpath)
     space_dict = {}
+    try:
+        z = OptiZFS()
+        pools = z.get_pools()
+        for k, v in pools.items():
+            if mount_path == z.get_mountpoint(v):
+                storage = z.get_storage(v)
+                logging.debug("mp: {} - {}%".format(mount_path, storage))
+                space_dict["percent"] = z.get_storage(v)
+                return space_dict.get(return_type)
+    except Exception as e:
+        logging.warning(e)
     space = psutil.disk_usage(mount_path)
     space_dict["total"] = space.total
     space_dict["used"] = space.used
     space_dict["free"] = space.free
     space_dict["percent"] = space.percent
     return space_dict.get(return_type)
+
 
 def get_memory(return_type='percent', procpath=None):
     if procpath:

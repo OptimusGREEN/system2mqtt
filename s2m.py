@@ -106,7 +106,7 @@ class System2Mqtt(object):
         base = self.config.MQTT_BASE_TOPIC + "/disks/mount/"
         try:
             if not self.config.PVE_SYSTEM:
-                disks = get_disks('internal', procpath=self.config.PROCHOST)
+                disks = get_disks(procpath=self.config.PROCHOST)
                 for d in disks:
                     if d == "/":
                         label = "root"
