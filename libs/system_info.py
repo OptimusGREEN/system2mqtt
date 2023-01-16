@@ -26,6 +26,7 @@ def get_disks(procpath=None):
         z = OptiZFS()
         pools = z.get_pools()
         for k, v in pools.items():
+            logging.debug("zfs pool: {}".format(k))
             all_disks.append(z.get_mountpoint(v))
     except Exception as e:
         logging.warning(e)
@@ -33,12 +34,14 @@ def get_disks(procpath=None):
         excluded = ['/private/var/vm', "/Data"]
         for d in disks:
             if d in excluded:
+                logging.debug("{} in exclude list, ignoring...".format(d))
                 disks.remove(d)
         for d in disks:
             all_disks.append(d.mountpoint)
     else:
         for d in disks:
             all_disks.append(d.mountpoint)
+    logging.debug("All Disks:\n{}".format(all_disks))
     return all_disks
 
 def get_disk_space(mount_path, return_type='percent', procpath=None):

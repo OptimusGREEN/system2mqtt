@@ -24,7 +24,7 @@ class Myqtt(object):
         self.client = mqtt.Client()
 
     def run(self):
-        logging.debug("{}, {}, {}, {}".format(self.host, self.port, self.username, self.password))
+        logging.debug("{}, {}, {}, {}".format(self.host, self.port, self.username, "<redacted>"))
         if self.lwt_topic:
             self.client.will_set(topic=self.lwt_topic, payload=self.lwt_offline_payload, retain=self.lwt_retain)
         if self.username and self.password:
