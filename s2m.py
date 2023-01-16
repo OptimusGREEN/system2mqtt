@@ -78,7 +78,7 @@ class System2Mqtt(object):
         return sub_dict
 
     def run(self):
-        logging.debug("")
+        self.config.print_config()
         self.myqtt.run()
         self.wait()
 

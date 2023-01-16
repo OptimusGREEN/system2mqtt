@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from libs.system_info import get_hostname, Platform
-import os
+import os, logging
 
 
 class Parser(object):
@@ -14,21 +14,17 @@ class Parser(object):
         self.MQTT_BASE_TOPIC = os.getenv("MQTT_BASE_TOPIC", default="system2mqtt/{}".format(self.COMPUTER_NAME))
         self.PUBLISH_PERIOD = os.getenv("PUBLISH_PERIOD", default=30)
         self.DEBUG_LOG = os.getenv("DEBUG_LOG", default=False)
-        self.PROCHOST = os.getenv("PROCHOST", default="/prochost")
-
+        self.PROCPATH = os.getenv("PROCPATH", default="/proc")
         self.ARGONFAN = os.getenv("ARGONFAN", default=False)
-
         self.PVE_SYSTEM = os.getenv("PVE_SYSTEM", default=False)
         self.PVE_NODE_NAME = os.getenv("PVE_NODE_NAME", default="pve")
         self.PVE_HOST = os.getenv("PVE_HOST", default="localhost")
         self.PVE_USER = os.getenv("PVE_USER", default="root@pam")
         self.PVE_PASSWORD = os.getenv("PVE_PASSWORD")
-
         self.MQTT_HOST = os.getenv("MQTT_HOST", default="localhost")
         self.MQTT_PORT = os.getenv("MQTT_PORT", default=1883)
         self.MQTT_USER = os.getenv("MQTT_USER", default=None)
         self.MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", default=None)
-
         self.MACOS = os.getenv("MACOS", default=False)
 
         if Platform == "Darwin":
@@ -37,3 +33,12 @@ class Parser(object):
         else:
             self.MACOS = False
 
+    def print_config(self):
+        conf = "\n###############################################\n\nUsing Current Config\n\n"
+        for k, v in self.__dict__.items():
+            if "PASS".lower() in k.lower() or "PASSWORD".lower() in k.lower():
+                if v:
+                    v = '*' * len(str(v))
+            conf += "{}: {}\n".format(k, v)
+        conf += "\n###############################################\n\n"
+        logging.info(conf)
