@@ -106,7 +106,7 @@ class System2Mqtt(object):
         base = self.config.MQTT_BASE_TOPIC + "/disks/mount/"
         try:
             if not self.config.PVE_SYSTEM:
-                disks = get_disks(procpath=self.config.PROCHOST)
+                disks = get_disks(procpath=self.config.PROCPATH)
                 for d in disks:
                     if d == "/":
                         label = "root"
@@ -133,9 +133,9 @@ class System2Mqtt(object):
         base = self.config.MQTT_BASE_TOPIC + "/disks/storage/"
         try:
             if not self.config.PVE_SYSTEM:
-                disks = get_disks(procpath=self.config.PROCHOST)
+                disks = get_disks(procpath=self.config.PROCPATH)
                 for d in disks:
-                    space = get_disk_space(d, procpath=self.config.PROCHOST)
+                    space = get_disk_space(d, procpath=self.config.PROCPATH)
                     if d == "/":
                         label = "root"
                     else:
@@ -162,18 +162,18 @@ class System2Mqtt(object):
         try:
             if self.config.MACOS:
                 try:
-                    dec = Decimal(get_temps(procpath=self.config.PROCHOST))
+                    dec = Decimal(get_temps(procpath=self.config.PROCPATH))
                     temp = str(round(dec, 1))
                 except Exception as e:
                     logging.warning(e)
-                    temp = get_temps(procpath=self.config.PROCHOST)
+                    temp = get_temps(procpath=self.config.PROCPATH)
                 logging.info("CPU temperature: {}°C".format(temp))
                 self.myqtt.publish(final_topic, temp)
             else:
                 try:
-                    temps = get_temps(procpath=self.config.PROCHOST)["coretemp"]
+                    temps = get_temps(procpath=self.config.PROCPATH)["coretemp"]
                 except:
-                    temps = get_temps(procpath=self.config.PROCHOST)["cpu_thermal"]
+                    temps = get_temps(procpath=self.config.PROCPATH)["cpu_thermal"]
                 c_list = []
                 for temp in temps:
                     c_list.append(temp.current)
@@ -188,7 +188,7 @@ class System2Mqtt(object):
         final_topic = self.config.MQTT_BASE_TOPIC + "/cpu/usage"
         try:
             if not self.config.PVE_SYSTEM:
-                cpu = get_cpu(procpath=self.config.PROCHOST)
+                cpu = get_cpu(procpath=self.config.PROCPATH)
                 logging.info("CPU usage: {}%".format(cpu))
                 self.myqtt.publish(final_topic, cpu)
             elif self.config.PVE_SYSTEM:
@@ -207,7 +207,7 @@ class System2Mqtt(object):
         final_topic = self.config.MQTT_BASE_TOPIC + "/memory"
         try:
             if not self.config.PVE_SYSTEM:
-                mem = get_memory(procpath=self.config.PROCHOST)
+                mem = get_memory(procpath=self.config.PROCPATH)
                 logging.info("Memory Used: {}%".format(mem))
                 self.myqtt.publish(final_topic, mem)
             elif self.config.PVE_SYSTEM:

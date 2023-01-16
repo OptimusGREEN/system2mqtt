@@ -18,7 +18,7 @@ def get_hostname():
     return socket.gethostname()
 
 def get_disks(procpath=None):
-    if procpath:
+    if Platform == "Linux":
         set_proc(procpath)
     disks = psutil.disk_partitions(all=False)
     all_disks = []
@@ -42,7 +42,7 @@ def get_disks(procpath=None):
     return all_disks
 
 def get_disk_space(mount_path, return_type='percent', procpath=None):
-    if procpath:
+    if Platform == "Linux":
         set_proc(procpath)
     space_dict = {}
     try:
@@ -65,7 +65,7 @@ def get_disk_space(mount_path, return_type='percent', procpath=None):
 
 
 def get_memory(return_type='percent', procpath=None):
-    if procpath:
+    if Platform == "Linux":
         set_proc(procpath)
     mem_dict = {}
     mem = psutil.virtual_memory()
@@ -114,7 +114,7 @@ def get_temps(procpath=None):
             temps = None
     else:
         try:
-            if procpath:
+            if Platform == "Linux":
                 set_proc(procpath)
             temps = psutil.sensors_temperatures()
         except:
@@ -122,7 +122,7 @@ def get_temps(procpath=None):
     return temps
 
 def get_cpu(procpath=None):
-    if procpath:
+    if Platform == "Linux":
         set_proc(procpath)
     cpu = psutil.cpu_percent(interval=1)
     return cpu
