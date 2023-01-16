@@ -23,6 +23,10 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 #MQTT_USER=myusername                            ### Optional: default: None
 #MQTT_PASSWORD=mypassword                        ### Optional: default: None
 
+#PROCPATH=/path/to/proc                          ### Optional: default: /proc (linux only, in case /proc is somewhere else)
+
+#ARGONFAN=True                                   ### Optional: default: False (Get fan speed from pi argon case)
+
 ##### Proxmox
 #PVE_SYSTEM=False                                ### Optional: default: False (Set to true if computer is running proxmox)
 
@@ -34,7 +38,7 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 
 
 ###### rename or copy this file (to be called) s2m.conf or pass its path as an argument when calling run.py
-#### example: python3 system2mqtt/run.py path/to/my/s2m.conf
+#### example: python3 system2mqtt/run.py path/to/my/s2m.conf (some info may only be available if run with elevated privileges)
 ```
 
 A docker image is also available [here](https://hub.docker.com/repository/docker/optimusgreen/system2mqtt) but is only currently available for access to proxmox api rather than bare metal local system.
