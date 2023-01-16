@@ -109,7 +109,7 @@ class System2Mqtt(object):
                 disks = get_disks(procpath=self.config.PROCPATH)
                 for d in disks:
                     if d == "/":
-                        label = "root"
+                        label = "sysroot"
                     else:
                         label = d.split("/")[-1]
                     final_topic = base + label
@@ -137,7 +137,7 @@ class System2Mqtt(object):
                 for d in disks:
                     space = get_disk_space(d, procpath=self.config.PROCPATH)
                     if d == "/":
-                        label = "root"
+                        label = "sysroot"
                     else:
                         label = d.split("/")[-1]
                     final_topic = base + label
