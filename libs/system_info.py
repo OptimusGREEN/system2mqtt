@@ -49,6 +49,7 @@ def get_disks(procpath=None):
     return all_disks
 
 def get_disk_space(mount_path, return_type='percent', procpath=None):
+    logging.debug(mount_path)
     if Platform == "Linux":
         set_proc(procpath)
     space_dict = {}
@@ -60,7 +61,9 @@ def get_disk_space(mount_path, return_type='percent', procpath=None):
                 storage = z.get_storage_percent(v)
                 logging.debug("mp: {} - {}%".format(mount_path, storage))
                 space_dict["percent"] = storage
-                return space_dict.get(return_type)
+                output = space_dict.get(return_type)
+                logging.debug(output)
+                return output
     except Exception as e:
         logging.warning(e)
     space = psutil.disk_usage(mount_path)
@@ -68,7 +71,9 @@ def get_disk_space(mount_path, return_type='percent', procpath=None):
     space_dict["used"] = space.used
     space_dict["free"] = space.free
     space_dict["percent"] = space.percent
-    return space_dict.get(return_type)
+    output = space_dict.get(return_type)
+    logging.debug(output)
+    return output
 
 
 def get_memory(return_type='percent', procpath=None):
