@@ -27,7 +27,9 @@ def get_disks(procpath=None):
         pools = z.get_pools()
         for k, v in pools.items():
             logging.debug("zfs pool: {}".format(k))
-            all_disks.append(z.get_mountpoint(v))
+            p = z.get_mountpoint(v)
+            if p not in all_disks:
+                all_disks.append(p)
     except Exception as e:
         logging.warning(e)
     if Platform == 'Darwin':
@@ -37,10 +39,12 @@ def get_disks(procpath=None):
                 logging.debug("{} in exclude list, ignoring...".format(d))
                 disks.remove(d)
         for d in disks:
-            all_disks.append(d.mountpoint)
+            if d.mountpoint not in all_disks:
+                all_disks.append(d.mountpoint)
     else:
         for d in disks:
-            all_disks.append(d.mountpoint)
+            if d.mountpoint not in all_disks:
+                all_disks.append(d.mountpoint)
     logging.debug("All Disks:\n{}".format(all_disks))
     return all_disks
 
