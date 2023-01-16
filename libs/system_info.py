@@ -7,55 +7,78 @@ import logging
 # cpu_pct = psutil.cpu_percent(interval=0.1, percpu=False)
 # load = psutil.getloadavg()
 # mem = psutil.virtual_memory()
+from libs.optizfs import OptiZFS
 
 Platform = platform.system()
+
+def set_proc(procpath):
+    psutil.PROCFS_PATH = procpath
 
 def get_hostname():
     return socket.gethostname()
 
-def get_disks(return_type="all"):
+def get_disks(procpath=None):
+    if Platform == "Linux":
+        set_proc(procpath)
     disks = psutil.disk_partitions(all=False)
-    internal_disks = []
-    external_disks = []
+    all_disks = []
+    try:
+        z = OptiZFS()
+        pools = z.get_pools()
+        for k, v in pools.items():
+            logging.debug("zfs pool: {}".format(k))
+            p = z.get_mountpoint(v)
+            if p not in all_disks:
+                all_disks.append(p)
+    except Exception as e:
+        logging.warning(e)
     if Platform == 'Darwin':
-        imac_internals = ["/", "/Volumes/Storage HDD"]
-        macbook_internals = ["/"]
         excluded = ['/private/var/vm', "/Data"]
         for d in disks:
             if d in excluded:
+                logging.debug("{} in exclude list, ignoring...".format(d))
                 disks.remove(d)
         for d in disks:
-            if d.mountpoint in imac_internals or macbook_internals:
-                internal_disks.append(d.mountpoint)
-            if d.mountpoint not in imac_internals or macbook_internals and d.mountpoint.startswith("/Volumes"):
-                external_disks.append(d.mountpoint)
+            if d.mountpoint not in all_disks:
+                all_disks.append(d.mountpoint)
     else:
         for d in disks:
-            if "/mnt/" in d.mountpoint:
-                internal_disks.append(d.mountpoint)
-            if "/" == d.mountpoint:
-                internal_disks.append(d.mountpoint)
-            if "/media/" in d.mountpoint:
-                external_disks.append(d.mountpoint)
-    if return_type == 'all':
-        return (internal_disks + external_disks)
-    elif return_type == 'internal':
-        return internal_disks
-    elif return_type == "external":
-        return external_disks
-    else:
-        raise Exception("Invalid return type received. Options are 'all', 'internal', 'external'")
+            if d.mountpoint not in all_disks:
+                all_disks.append(d.mountpoint)
+    logging.debug("All Disks:\n{}".format(all_disks))
+    return all_disks
 
-def get_disk_space(mount_path, return_type='percent'):
+def get_disk_space(mount_path, return_type='percent', procpath=None):
+    logging.debug(mount_path)
+    if Platform == "Linux":
+        set_proc(procpath)
     space_dict = {}
+    try:
+        z = OptiZFS()
+        pools = z.get_pools()
+        for k, v in pools.items():
+            if mount_path == z.get_mountpoint(v):
+                storage = z.get_storage_percent(v)
+                logging.debug("mp: {} - {}%".format(mount_path, storage))
+                space_dict["percent"] = storage
+                output = space_dict.get(return_type)
+                logging.debug(output)
+                return output
+    except Exception as e:
+        logging.warning(e)
     space = psutil.disk_usage(mount_path)
     space_dict["total"] = space.total
     space_dict["used"] = space.used
     space_dict["free"] = space.free
     space_dict["percent"] = space.percent
-    return space_dict.get(return_type)
+    output = space_dict.get(return_type)
+    logging.debug(output)
+    return output
 
-def get_memory(return_type='percent'):
+
+def get_memory(return_type='percent', procpath=None):
+    if Platform == "Linux":
+        set_proc(procpath)
     mem_dict = {}
     mem = psutil.virtual_memory()
     try:
@@ -92,7 +115,7 @@ def get_memory(return_type='percent'):
         mem_dict["wired"] = ""
     return mem_dict.get(return_type)
 
-def get_temps():
+def get_temps(procpath=None):
     if Platform == 'Darwin':
         try:
             task = subprocess.check_output(
@@ -103,14 +126,26 @@ def get_temps():
             temps = None
     else:
         try:
+            if Platform == "Linux":
+                set_proc(procpath)
             temps = psutil.sensors_temperatures()
         except:
             temps = None
     return temps
 
-def get_cpu():
+def get_cpu(procpath=None):
+    if Platform == "Linux":
+        set_proc(procpath)
     cpu = psutil.cpu_percent(interval=1)
     return cpu
+
+def get_argon_fan_speed():
+    with open("/tmp/fanspeed.txt") as e:
+        speed = e.read()
+    try:
+        return int(float(speed))
+    except FileNotFoundError:
+        return None
 
 ###### MAC SPECIFIC #####
 

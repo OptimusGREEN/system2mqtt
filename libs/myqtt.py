@@ -24,13 +24,15 @@ class Myqtt(object):
         self.client = mqtt.Client()
 
     def run(self):
-        logging.debug("{}, {}, {}, {}".format(self.host, self.port, self.username, self.password))
+        logging.debug("{}, {}, {}, {}".format(self.host, self.port, self.username, "<redacted>"))
         if self.lwt_topic:
             self.client.will_set(topic=self.lwt_topic, payload=self.lwt_offline_payload, retain=self.lwt_retain)
         if self.username and self.password:
             self.client.username_pw_set(self.username, self.password)
         self.client.reconnect_delay_set(min_delay=1, max_delay=120)
         logging.info("Attempting to connect to mqtt broker...")
+        logging.info("Host: {}".format(self.host))
+        logging.info("User: {}".format(self.username))
         self.client.connect_async(self.host, self.port)
         self.client.loop_start()
         self.client.on_connect = self.on_connect
