@@ -8,6 +8,7 @@ from libs.system_info import get_temps, Platform, get_hostname, get_disks, get_d
 from libs.myqtt import Myqtt
 from libs.optimox import OptiMOX, prox_auth
 from libs.parser import Parser
+from libs.argon import gethddtemp
 
 hostname = get_hostname()
 
@@ -222,14 +223,23 @@ class System2Mqtt(object):
         except Exception as e:
             logging.error(e)
     
-    def publish_fan_speed(self):
-        if self.config.ARGONFAN:
+    def publish_argon(self):
+        if self.config.ARGON:
             logging.debug("Getting fan speed")
             final_topic = self.config.MQTT_BASE_TOPIC + "/fan_speed"
             try:
                 speed = get_argon_fan_speed()
                 logging.info("Fan Speed: {}%".format(speed))
                 self.myqtt.publish(final_topic, speed)
+            except Exception as e:
+                logging.error(e)
+            logging.debug("Getting hdd temperatures")
+            try:
+                temps = gethddtemp()
+                for disk, temp in temps.items():
+                    final_topic = self.config.MQTT_BASE_TOPIC + "/disks/temperature/{}".format(disk)
+                    logging.info("{}: {}°C".format(disk, temp))
+                    self.myqtt.publish(final_topic, temp)
             except Exception as e:
                 logging.error(e)
 
@@ -241,7 +251,7 @@ class System2Mqtt(object):
                  self.publish_cpu_temp,
                  self.publish_cpu_usage,
                  self.publish_ram,
-                 self.publish_fan_speed]
+                 self.publish_argon]
         for f in funcs:
             f()
 
