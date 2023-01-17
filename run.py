@@ -2,10 +2,17 @@
 
 # s2m watchdog
 
-from subprocess import call
+from subprocess import call, check_call
 from time import sleep
 import logging, os, sys
-from libs.system_info import Platform, get_hostname
+
+try:
+    deps = os.path.join(os.path.dirname(os.path.realpath(__file__)), "deps.txt")
+    check_call(["pip3", "install", "-r", deps])
+except:
+    logging.error("You will need to install the requirements, try...\n\n pip3 install -r deps.txt")
+
+from libs.system_info import get_hostname
 
 hostname = get_hostname()
 
