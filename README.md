@@ -25,7 +25,7 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 
 #PROCPATH=/path/to/proc                          ### Optional: default: /proc (linux only, in case /proc is somewhere else)
 
-#ARGONFAN=True                                   ### Optional: default: False (Get fan speed from pi argon case)
+#ARGON=True                                      ### Optional: default: False (Get info from pi argon case)
 
 ##### Proxmox
 #PVE_SYSTEM=False                                ### Optional: default: False (Set to true if computer is running proxmox)

@@ -15,7 +15,7 @@ class Parser(object):
         self.PUBLISH_PERIOD = os.getenv("PUBLISH_PERIOD", default=30)
         self.DEBUG_LOG = os.getenv("DEBUG_LOG", default=False)
         self.PROCPATH = os.getenv("PROCPATH", default="/proc")
-        self.ARGONFAN = os.getenv("ARGONFAN", default=False)
+        self.ARGON = os.getenv("ARGON", default=False)
         self.PVE_SYSTEM = os.getenv("PVE_SYSTEM", default=False)
         self.PVE_NODE_NAME = os.getenv("PVE_NODE_NAME", default="pve")
         self.PVE_HOST = os.getenv("PVE_HOST", default="localhost")
