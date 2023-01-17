@@ -31,7 +31,7 @@ def get_disks(procpath=None):
             if p not in all_disks:
                 all_disks.append(p)
     except Exception as e:
-        logging.warning(e)
+        logging.debug(e)
     if Platform == 'Darwin':
         excluded = ['/private/var/vm', "/Data"]
         for d in disks:
@@ -65,7 +65,7 @@ def get_disk_space(mount_path, return_type='percent', procpath=None):
                 logging.debug(output)
                 return output
     except Exception as e:
-        logging.warning(e)
+        logging.debug(e)
     space = psutil.disk_usage(mount_path)
     space_dict["total"] = space.total
     space_dict["used"] = space.used
