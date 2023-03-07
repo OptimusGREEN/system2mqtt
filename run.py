@@ -8,6 +8,7 @@ import logging, os, sys
 
 try:
     deps = os.path.join(os.path.dirname(os.path.realpath(__file__)), "deps.txt")
+    logging.info("installing deps from: {}".format(deps))
     check_call(["pip3", "install", "-r", deps])
 except:
     logging.error("You will need to install the requirements, try...\n\n pip3 install -r deps.txt")
