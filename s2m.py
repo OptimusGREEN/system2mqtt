@@ -4,6 +4,8 @@
 
 import logging, time, os, sys
 from decimal import Decimal
+from subprocess import check_call
+
 from libs.system_info import get_temps, Platform, get_hostname, get_disks, get_disk_space, get_memory, get_cpu, set_proc, get_argon_fan_speed
 from libs.myqtt import Myqtt
 from libs.optimox import OptiMOX, prox_auth
@@ -277,7 +279,7 @@ class System2Mqtt(object):
 
     def quit_s2m(self, client, userdata, message):
         logging.debug("")
-        if int(message.payload.decode("utf-8")) == 1:
+        if message.payload.decode("utf-8") == "1":
             self.auto_reconnect =False
             logging.info("Quit called....")
             self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/s2m_quit", "")
@@ -286,10 +288,10 @@ class System2Mqtt(object):
             client.disconnect()
     
     def cb_shutdown(self, client, userdata, message):
-        logging.debug(message.payload.decode("utf-8"))
+        mpl = message.payload.decode("utf-8")
+        logging.debug(mpl)
         title = "[Shutdown]"
-        mpl = int(message.payload.decode("utf-8"))
-        if mpl == 1:
+        if mpl == "1":
             logging.info("Attempting to poweroff...")
             self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/shutdown", "")
             try:
@@ -297,13 +299,13 @@ class System2Mqtt(object):
             except Exception as e:
                 logging.error(e)
         else:
-            logging.debug("{}: '{}': Not 1 recieved".format(title, mpl))
+            logging.warning("{}: '{}': Not 1 recieved".format(title, mpl))
     
     def cb_reboot(self, client, userdata, message):
-        logging.debug(message.payload.decode("utf-8"))
+        mpl = message.payload.decode("utf-8")
+        logging.debug(mpl)
         title = "[Reboot]"
-        mpl = int(message.payload.decode("utf-8"))
-        if mpl == 1:
+        if mpl == "1":
             logging.info("Attempting to reboot...")
             self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/reboot", "")
             try:
@@ -311,7 +313,7 @@ class System2Mqtt(object):
             except Exception as e:
                 logging.error(e)
         else:
-            logging.debug("{}: '{}': Not 1 recieved".format(title, mpl))
+            logging.warning("{}: '{}': Not 1 recieved".format(title, mpl))
 
 
 
