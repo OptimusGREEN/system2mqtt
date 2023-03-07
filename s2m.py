@@ -297,7 +297,7 @@ class System2Mqtt(object):
             except Exception as e:
                 logging.error(e)
         else:
-            logging.debug("{}: '{}': Not 1 recieved".format(title, mpl))
+            logging.warning("{}: '{}': Not 1 recieved".format(title, mpl))
     
     def cb_reboot(self, client, userdata, message):
         logging.debug(message.payload.decode("utf-8"))
@@ -311,7 +311,7 @@ class System2Mqtt(object):
             except Exception as e:
                 logging.error(e)
         else:
-            logging.debug("{}: '{}': Not 1 recieved".format(title, mpl))
+            logging.warning("{}: '{}': Not 1 recieved".format(title, mpl))
 
 
 
