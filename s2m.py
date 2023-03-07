@@ -75,7 +75,9 @@ class System2Mqtt(object):
     def __get_subscription_calbacks(self):
         logging.debug("")
         sub_dict = {self.config.MQTT_BASE_TOPIC + "/tele/PUBLISH_PERIOD": self.s2m_set_publish_period,
-                    self.config.MQTT_BASE_TOPIC + "/callbacks/s2m_quit": self.quit_s2m}
+                    self.config.MQTT_BASE_TOPIC + "/callbacks/s2m_quit": self.quit_s2m,
+                    self.config.MQTT_BASE_TOPIC + "/callbacks/shutdown": self.cb_shutdown,
+                    self.config.MQTT_BASE_TOPIC + "/callbacks/reboot": self.cb_reboot}
         return sub_dict
 
     def run(self):
@@ -282,6 +284,34 @@ class System2Mqtt(object):
             self.myqtt.publish(self.lwt_topic, "exited", retain=True)
             client.loop_stop()
             client.disconnect()
+    
+    def cb_shutdown(self, client, userdata, message):
+        logging.debug(message.payload.decode("utf-8"))
+        title = "[Shutdown]"
+        mpl = int(message.payload.decode("utf-8"))
+        if mpl == 1:
+            logging.info("Attempting to poweroff...")
+            self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/shutdown", "")
+            try:
+                res = check_call(["shutdown", "-h", "now"])
+            except Exception as e:
+                logging.error(e)
+        else:
+            logging.debug("{}: '{}': Not 1 recieved".format(title, mpl))
+    
+    def cb_reboot(self, client, userdata, message):
+        logging.debug(message.payload.decode("utf-8"))
+        title = "[Reboot]"
+        mpl = int(message.payload.decode("utf-8"))
+        if mpl == 1:
+            logging.info("Attempting to reboot...")
+            self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/reboot", "")
+            try:
+                res = check_call(["reboot", "now"])
+            except Exception as e:
+                logging.error(e)
+        else:
+            logging.debug("{}: '{}': Not 1 recieved".format(title, mpl))
 
 
 
