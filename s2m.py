@@ -277,7 +277,7 @@ class System2Mqtt(object):
 
     def quit_s2m(self, client, userdata, message):
         logging.debug("")
-        if int(message.payload.decode("utf-8")) == 1:
+        if int(str(message.payload.decode("utf-8"))) == 1:
             self.auto_reconnect =False
             logging.info("Quit called....")
             self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/s2m_quit", "")
@@ -288,7 +288,7 @@ class System2Mqtt(object):
     def cb_shutdown(self, client, userdata, message):
         logging.debug(message.payload.decode("utf-8"))
         title = "[Shutdown]"
-        mpl = int(message.payload.decode("utf-8"))
+        mpl = int(str(message.payload.decode("utf-8")))
         if mpl == 1:
             logging.info("Attempting to poweroff...")
             self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/shutdown", "")
@@ -302,7 +302,7 @@ class System2Mqtt(object):
     def cb_reboot(self, client, userdata, message):
         logging.debug(message.payload.decode("utf-8"))
         title = "[Reboot]"
-        mpl = int(message.payload.decode("utf-8"))
+        mpl = int(str(message.payload.decode("utf-8")))
         if mpl == 1:
             logging.info("Attempting to reboot...")
             self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/reboot", "")
