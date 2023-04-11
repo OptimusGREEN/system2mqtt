@@ -26,6 +26,8 @@ class Parser(object):
         self.MQTT_USER = os.getenv("MQTT_USER", default=None)
         self.MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", default=None)
         self.MACOS = os.getenv("MACOS", default=False)
+        self.CALLBACKS = os.getenv("CALLBACKS", default={})
+        self.USER_CALLBACKS = os.getenv("USER_CALLBACKS", default=False)
 
         if Platform == "Darwin":
             self.MACOS = True
