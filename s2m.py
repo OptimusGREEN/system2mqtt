@@ -84,6 +84,7 @@ class System2Mqtt(object):
 
     def run(self):
         self.config.print_config()
+        self.process_user_callbacks()
         self.myqtt.run()
         self.wait()
 
@@ -263,6 +264,18 @@ class System2Mqtt(object):
 ################################################################################################
 ################################       CALLBACKS      ##########################################
 ################################################################################################
+
+    def process_user_callbacks(self, *args, **kwargs):
+        if self.config.USER_CALLBACKS:
+            import user_callbacks as uc
+            ucb = self.config.CALLBACKS
+            logging.debug(ucb)
+            if not type(ucb) == dict:
+                logging.warning("User callbacks aren't in a dictionary. They are a {}".format(type(ucb)))
+                import ast
+                ucb = ast.literal_eval(ucb)
+            for k, v in ucb.items():
+                    self.myqtt.topic_callbacks[k] = getattr(uc, v)
 
 
     def s2m_set_publish_period(self, client, userdata, message):
