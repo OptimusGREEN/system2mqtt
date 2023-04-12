@@ -84,7 +84,10 @@ class System2Mqtt(object):
 
     def run(self):
         self.config.print_config()
-        self.process_user_callbacks()
+        try:
+            self.process_user_callbacks()
+        except Exception as e:
+            logging.error(e)
         self.myqtt.run()
         self.wait()
 
