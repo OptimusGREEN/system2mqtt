@@ -269,6 +269,7 @@ class System2Mqtt(object):
 ################################################################################################
 
     def process_user_callbacks(self, *args, **kwargs):
+        logging.debug("Processing user callbacks...")
         if self.config.USER_CALLBACKS:
             import user_callbacks as uc
             ucb = self.config.CALLBACKS
@@ -279,6 +280,7 @@ class System2Mqtt(object):
                 ucb = ast.literal_eval(ucb)
             for k, v in ucb.items():
                     self.myqtt.topic_callbacks[k] = getattr(uc, v)
+            logging.debug(self.myqtt.topic_callbacks)
 
 
     def s2m_set_publish_period(self, client, userdata, message):

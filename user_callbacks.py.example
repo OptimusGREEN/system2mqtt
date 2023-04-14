@@ -4,11 +4,21 @@
 ##################################################################
 ##################################################################
 
-def cb1(*args, **kwargs):
-	print("THIS IS CB1, It is working")
+def cb1(client, userdata, message, *args, **kwargs):
+	trigger_payload = "mytriggerpayload"
+	actual_payload = message.payload.decode("utf-8")
+	if actual_payload == trigger_payload:
+		print("THIS IS CB1, It is working")
+	#client.publish(message.topic, "") # clear topic by sending empty string if required
 
-def cb2(*args, **kwargs):
-	print("THIS IS CB2, It is working")
+def cb2(client, userdata, message, *args, **kwargs):
+	trigger_payload = "mytriggerpayload" # whatever the payload needs to be to trigger the callback
+	actual_payload = message.payload.decode("utf-8")
+	if actual_payload == trigger_payload:
+		print("THIS IS CB2, It is working")
 
-def cb3(*args, **kwargs):
-	print("THIS IS CB3, It is working")
+def cb3(client, userdata, message, *args, **kwargs):
+	trigger_payload = "mytriggerpayload"
+	actual_payload = message.payload.decode("utf-8")
+	if actual_payload == trigger_payload:
+		print("THIS IS CB3, It is working")
