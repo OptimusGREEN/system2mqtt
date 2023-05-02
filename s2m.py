@@ -18,6 +18,7 @@ hostname = get_hostname()
 
 def setupLogging(DEBUG_MODE=False, conf=None):
     config = conf
+    title = config.COMPUTER_NAME.upper()
     log_dir = config.LOG_DIR
     if log_dir.startswith("./"):
         log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), log_dir.split("./")[1])
@@ -37,7 +38,7 @@ def setupLogging(DEBUG_MODE=False, conf=None):
         log_level = logging.DEBUG
     else:
         log_level = logging.INFO
-    format = "OptiSERVE [%(levelname)s] [%(module)s:%(lineno)d] " + " - %(asctime)s - %(message)s"
+    format = "{}: [%(levelname)s] [%(module)s:%(lineno)d] ".format(title) + " - %(asctime)s - %(message)s"
     if DEBUG_MODE:
         logging.basicConfig(level=log_level,format=format,handlers=[logging.FileHandler(log_filename),logging.StreamHandler()])
     else:
