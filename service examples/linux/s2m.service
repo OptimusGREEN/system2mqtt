@@ -12,7 +12,7 @@ User=bernard
 Restart=on-failure
 RestartSec=2s
 
-ExecStart=/usr/bin/python3 /home/bernard/scripts/python_scripts/system2mqtt/run.py
+ExecStart=/home/bernard/scripts/python_scripts/system2mqtt/run.py
 
 [Install]
 WantedBy=multi-user.target
