@@ -30,6 +30,10 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 #USER_CALLBACKS=True                              ### Optional: default: False (place your functions in the user_callbacks.py file)
 #CALLBACKS={'system2mqtt/MyTestComputer1/callbacks/testcb1': 'cb1', 'system2mqtt/MyTestComputer1/callbacks/testcb2': 'cb2', 'system2mqtt/MyTestComputer1/callbacks/testcb3': 'cb3'} # string dictionary in the form {'fullTopic': 'functionFromUserCallbacksFile'}
 
+##### Home Assistant Discovery
+# <discovery_prefix>/<component>/[<node_id>/]<object_id>/config
+#HA_DISCOVERY=True                                ### Optional: default: False (Set to true for home assistant mqtt discovery)
+#HA_DISCOVERY_BASE=homeassistant                  ### Optional: default: homeassistant
 
 ###### rename or copy this file (to be called) s2m.conf or pass its path as an argument when calling run.py
 #### example: python3 system2mqtt/run.py path/to/my/s2m.conf (some info may only be available if run with elevated privileges)

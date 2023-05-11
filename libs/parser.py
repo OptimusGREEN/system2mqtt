@@ -28,6 +28,8 @@ class Parser(object):
         self.MACOS = os.getenv("MACOS", default=False)
         self.CALLBACKS = os.getenv("CALLBACKS", default={})
         self.USER_CALLBACKS = os.getenv("USER_CALLBACKS", default=False)
+        self.HA_DISCOVERY = os.getenv("HA_DISCOVERY", default=False)
+        self.HA_DISCOVERY_BASE = os.getenv("HA_DISCOVERY_BASE", default="homeassistant")
 
         if Platform == "Darwin":
             self.MACOS = True
