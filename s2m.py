@@ -11,6 +11,7 @@ from libs.myqtt import Myqtt
 from libs.optimox import OptiMOX, prox_auth
 from libs.parser import Parser
 from libs.argon import gethddtemp
+from libs.homeassistant import ha_config
 
 hostname = get_hostname()
 
@@ -75,6 +76,10 @@ class System2Mqtt(object):
 
         self.mounted_disks = []
 
+        self.ha_discovery_template = "{}/{}/{}/config".format(self.config.HA_DISCOVERY_BASE, "{}", "{}")
+
+        self.publish_period = self.config.PUBLISH_PERIOD
+
     def __get_subscription_calbacks(self):
         logging.debug("")
         sub_dict = {self.config.MQTT_BASE_TOPIC + "/tele/PUBLISH_PERIOD": self.s2m_set_publish_period,
@@ -100,11 +105,11 @@ class System2Mqtt(object):
         self.start_publish_loop()
 
     def start_publish_loop(self):
-        logging.info("Publish period is set to {} seconds.".format(self.config.PUBLISH_PERIOD))
+        logging.info("Publish period is set to {} seconds.".format(self.publish_period))
         while self.myqtt.client.is_connected():
             logging.debug("flag: {}".format(self.myqtt.connected_flag))
             self.publish_all()
-            time.sleep(int(self.config.PUBLISH_PERIOD))
+            time.sleep(int(self.publish_period))
         if self.auto_reconnect:
             logging.info("Reconnecting...")
             self.wait()
@@ -113,7 +118,8 @@ class System2Mqtt(object):
 
     def publish_mount_state(self):
         logging.debug("")
-        base = self.config.MQTT_BASE_TOPIC + "/disks/mount/"
+        slug = "/disks/mount/"
+        base = self.config.MQTT_BASE_TOPIC + slug
         try:
             if not self.config.PVE_SYSTEM:
                 disks = get_disks(procpath=self.config.PROCPATH)
@@ -125,6 +131,20 @@ class System2Mqtt(object):
                     final_topic = base + label
                     logging.info("{} is mounted - publishing to '{}'".format(label, final_topic))
                     self.myqtt.publish(final_topic, "mounted")
+                    if self.config.HA_DISCOVERY:
+                        title = label
+                        for char in (" ", "-"):
+                            label = label.lower().replace(char, "_")
+                        device = self.config.COMPUTER_NAME
+                        for char in (" ", "-"):
+                            device = device.replace(char, "_")
+                        ha_object_id = "s2m_"+device+"_{}_{}".format(label, "mounted")
+                        ha_name = "{} Mount State".format(title).title()
+                        dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                        haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                             name=ha_name, object_id=ha_object_id,
+                                             state_topic=final_topic, device=device, payload_on="mounted", off_delay=self.publish_period+10)
+                        self.myqtt.publish(haconfig[0], haconfig[1])
             elif self.config.PVE_SYSTEM:
                 storage_data = self.pve.getNodeStorage(self.config.PVE_NODE_NAME)["data"]
                 for storage in storage_data:
@@ -286,15 +306,15 @@ class System2Mqtt(object):
 
     def s2m_set_publish_period(self, client, userdata, message):
         logging.debug("")
-        global PUBLISH_PERIOD
+        # global PUBLISH_PERIOD
         try:
             new_publish_period = int(message.payload.decode("utf-8"))
-            if new_publish_period != PUBLISH_PERIOD:
-                PUBLISH_PERIOD = new_publish_period
-                logging.info("Publish period has been set to {} seconds.".format(PUBLISH_PERIOD))
+            if new_publish_period != self.publish_period:
+                self.publish_period = new_publish_period
+                logging.info("Publish period has been set to {} seconds.".format(self.publish_period))
         except Exception as e:
             logging.error(e)
-            PUBLISH_PERIOD = 30
+            self.publish_period = self.config.PUBLISH_PERIOD
 
     def quit_s2m(self, client, userdata, message):
         logging.debug("")
