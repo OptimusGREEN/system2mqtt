@@ -13,6 +13,11 @@ def get_config_attributes(topic_slug):
         ha_icon = "mdi:harddisk"
         ha_unit = "%"
         ha_class ="None"
+    elif topic_slug == "/fan_speed":
+        ha_type = "sensor"
+        ha_unit = "%"
+        ha_icon = "mdi:fan"
+        ha_class = "None"
     elif topic_slug == "/cpu/temperature" or "/disks/temperature":
         ha_type = "sensor"
         ha_class = "temperature"
@@ -27,11 +32,6 @@ def get_config_attributes(topic_slug):
         ha_type = "sensor"
         ha_unit = "%"
         ha_icon = "mdi:memory"
-        ha_class = "None"
-    elif topic_slug == "/fan_speed":
-        ha_type = "sensor"
-        ha_unit = "%"
-        ha_icon = "mdi:fan"
         ha_class = "None"
     else:
         logging.error("topic slug not recognised")

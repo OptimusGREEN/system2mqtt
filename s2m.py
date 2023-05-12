@@ -397,8 +397,8 @@ class System2Mqtt(object):
             except Exception as e:
                 logging.error(e)
             logging.debug("Getting hdd temperatures")
+            slug = "/disks/temperature"
             try:
-                slug = "/disks/temperature"
                 temps = gethddtemp()
                 for disk, temp in temps.items():
                     final_topic = self.config.MQTT_BASE_TOPIC + slug + "/" +disk
