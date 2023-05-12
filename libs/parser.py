@@ -12,7 +12,7 @@ class Parser(object):
         self.LOG_FILENAME = os.getenv("LOG_FILENAME", default="system2mqtt.log")
         self.OLD_LOG_FILENAME = os.getenv("OLD_LOG_FILENAME", default="old_system2mqtt.log")
         self.MQTT_BASE_TOPIC = os.getenv("MQTT_BASE_TOPIC", default="system2mqtt/{}".format(self.COMPUTER_NAME))
-        self.PUBLISH_PERIOD = os.getenv("PUBLISH_PERIOD", default=30)
+        self.PUBLISH_PERIOD = os.getenv("PUBLISH_PERIOD", default=60)
         self.DEBUG_LOG = os.getenv("DEBUG_LOG", default=False)
         self.PROCPATH = os.getenv("PROCPATH", default="/proc")
         self.ARGON = os.getenv("ARGON", default=False)
@@ -28,6 +28,8 @@ class Parser(object):
         self.MACOS = os.getenv("MACOS", default=False)
         self.CALLBACKS = os.getenv("CALLBACKS", default={})
         self.USER_CALLBACKS = os.getenv("USER_CALLBACKS", default=False)
+        self.HA_DISCOVERY = os.getenv("HA_DISCOVERY", default=False)
+        self.HA_DISCOVERY_BASE = os.getenv("HA_DISCOVERY_BASE", default="homeassistant")
 
         if Platform == "Darwin":
             self.MACOS = True
