@@ -80,6 +80,8 @@ class System2Mqtt(object):
 
         self.publish_period = self.config.PUBLISH_PERIOD
 
+        self.first_loop_done = False
+
     def __get_subscription_calbacks(self):
         logging.debug("")
         sub_dict = {self.config.MQTT_BASE_TOPIC + "/tele/PUBLISH_PERIOD": self.s2m_set_publish_period,
@@ -131,7 +133,7 @@ class System2Mqtt(object):
                     final_topic = base + label
                     logging.info("{} is mounted - publishing to '{}'".format(label, final_topic))
                     self.myqtt.publish(final_topic, "mounted")
-                    if self.config.HA_DISCOVERY:
+                    if self.config.HA_DISCOVERY and not self.first_loop_done:
                         title = label
                         for char in (" ", "-"):
                             label = label.lower().replace(char, "_")
@@ -153,7 +155,7 @@ class System2Mqtt(object):
                     final_topic = base + label
                     logging.info("Storage: {}: {}%".format(label, state))
                     self.myqtt.publish(final_topic, state)
-                    if self.config.HA_DISCOVERY:
+                    if self.config.HA_DISCOVERY and not self.first_loop_done:
                         title = label
                         for char in (" ", "-"):
                             label = label.lower().replace(char, "_")
@@ -187,7 +189,7 @@ class System2Mqtt(object):
                         label = d.split("/")[-1]
                     final_topic = base + label
                     self.myqtt.publish(final_topic, space)
-                    if self.config.HA_DISCOVERY:
+                    if self.config.HA_DISCOVERY and not self.first_loop_done:
                         title = label
                         for char in (" ", "-"):
                             label = label.lower().replace(char, "_")
@@ -210,7 +212,7 @@ class System2Mqtt(object):
                     final_topic = base + label
                     logging.info("Storage: {}: {}%".format(label, pct))
                     self.myqtt.publish(final_topic, pct)
-                    if self.config.HA_DISCOVERY:
+                    if self.config.HA_DISCOVERY and not self.first_loop_done:
                         title = label
                         for char in (" ", "-"):
                             label = label.lower().replace(char, "_")
@@ -243,7 +245,7 @@ class System2Mqtt(object):
                     temp = get_temps(procpath=self.config.PROCPATH)
                 logging.info("CPU temperature: {}°C".format(temp))
                 self.myqtt.publish(final_topic, temp)
-                if self.config.HA_DISCOVERY:
+                if self.config.HA_DISCOVERY and not self.first_loop_done:
                     title = self.config.COMPUTER_NAME + " CPU Temperature"
                     device = self.config.COMPUTER_NAME
                     for char in (" ", "-"):
@@ -266,7 +268,7 @@ class System2Mqtt(object):
                 highest = max(c_list)
                 logging.info("CPU temperature: {}°C".format(highest))
                 self.myqtt.publish(final_topic, str(highest))
-                if self.config.HA_DISCOVERY:
+                if self.config.HA_DISCOVERY and not self.first_loop_done:
                     title = self.config.COMPUTER_NAME + " CPU Temperature"
                     device = self.config.COMPUTER_NAME
                     for char in (" ", "-"):
@@ -290,7 +292,7 @@ class System2Mqtt(object):
                 cpu = get_cpu(procpath=self.config.PROCPATH)
                 logging.info("CPU usage: {}%".format(cpu))
                 self.myqtt.publish(final_topic, cpu)
-                if self.config.HA_DISCOVERY:
+                if self.config.HA_DISCOVERY and not self.first_loop_done:
                     title = self.config.COMPUTER_NAME + " CPU Usage"
                     device = self.config.COMPUTER_NAME
                     for char in (" ", "-"):
@@ -308,7 +310,7 @@ class System2Mqtt(object):
                 logging.info("CPU usage: {}%".format(pct))
                 if pct > 0:
                     self.myqtt.publish(final_topic, pct)
-                    if self.config.HA_DISCOVERY:
+                    if self.config.HA_DISCOVERY and not self.first_loop_done:
                         title = self.config.COMPUTER_NAME + " CPU Usage"
                         device = self.config.COMPUTER_NAME
                         for char in (" ", "-"):
@@ -334,7 +336,7 @@ class System2Mqtt(object):
                 mem = get_memory(procpath=self.config.PROCPATH)
                 logging.info("Memory Used: {}%".format(mem))
                 self.myqtt.publish(final_topic, mem)
-                if self.config.HA_DISCOVERY:
+                if self.config.HA_DISCOVERY and not self.first_loop_done:
                     title = self.config.COMPUTER_NAME + " Memory Usage"
                     device = self.config.COMPUTER_NAME
                     for char in (" ", "-"):
@@ -353,7 +355,7 @@ class System2Mqtt(object):
                 pct = int((used / total) * 100)
                 logging.info("Ram usage: {}%".format(pct))
                 self.myqtt.publish(final_topic, pct)
-                if self.config.HA_DISCOVERY:
+                if self.config.HA_DISCOVERY and not self.first_loop_done:
                     title = self.config.COMPUTER_NAME + " Memory Usage"
                     device = self.config.COMPUTER_NAME
                     for char in (" ", "-"):
@@ -379,7 +381,7 @@ class System2Mqtt(object):
                 speed = get_argon_fan_speed()
                 logging.info("Fan Speed: {}%".format(speed))
                 self.myqtt.publish(final_topic, speed)
-                if self.config.HA_DISCOVERY:
+                if self.config.HA_DISCOVERY and not self.first_loop_done:
                     title = "Argon Fan Speed"
                     device = self.config.COMPUTER_NAME
                     for char in (" ", "-"):
@@ -394,14 +396,14 @@ class System2Mqtt(object):
             except Exception as e:
                 logging.error(e)
             logging.debug("Getting hdd temperatures")
-            slug = "/disks/temperature"
             try:
+                slug = "/disks/temperature"
                 temps = gethddtemp()
                 for disk, temp in temps.items():
                     final_topic = self.config.MQTT_BASE_TOPIC + slug + "/" +disk
                     logging.info("{}: {}°C".format(disk, temp))
                     self.myqtt.publish(final_topic, temp)
-                    if self.config.HA_DISCOVERY:
+                    if self.config.HA_DISCOVERY and not self.first_loop_done:
                         title = disk
                         for char in (" ", "-"):
                             disk = disk.lower().replace(char, "_")
