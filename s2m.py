@@ -148,11 +148,25 @@ class System2Mqtt(object):
             elif self.config.PVE_SYSTEM:
                 storage_data = self.pve.getNodeStorage(self.config.PVE_NODE_NAME)["data"]
                 for storage in storage_data:
-                    name = storage["storage"]
+                    label = storage["storage"]
                     state = storage["active"]
-                    final_topic = base + name
-                    logging.info("Storage: {}: {}%".format(name, state))
+                    final_topic = base + label
+                    logging.info("Storage: {}: {}%".format(label, state))
                     self.myqtt.publish(final_topic, state)
+                    if self.config.HA_DISCOVERY:
+                        title = label
+                        for char in (" ", "-"):
+                            label = label.lower().replace(char, "_")
+                        device = self.config.COMPUTER_NAME
+                        for char in (" ", "-"):
+                            device = device.replace(char, "_")
+                        ha_object_id = "s2m_"+device+"_{}_{}".format(label, "mounted")
+                        ha_name = "{} Mount State".format(title).title()
+                        dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                        haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                             name=ha_name, object_id=ha_object_id,
+                                             state_topic=final_topic, device=device, payload_on="mounted", off_delay=self.publish_period+10)
+                        self.myqtt.publish(haconfig[0], haconfig[1])
             else:
                 logging.warning("Hmm, something went wrong")
         except Exception as e:
@@ -160,7 +174,8 @@ class System2Mqtt(object):
 
     def publish_disk_space(self):
         logging.debug("")
-        base = self.config.MQTT_BASE_TOPIC + "/disks/storage/"
+        slug = "/disks/storage/"
+        base = self.config.MQTT_BASE_TOPIC + slug
         try:
             if not self.config.PVE_SYSTEM:
                 disks = get_disks(procpath=self.config.PROCPATH)
@@ -172,15 +187,43 @@ class System2Mqtt(object):
                         label = d.split("/")[-1]
                     final_topic = base + label
                     self.myqtt.publish(final_topic, space)
+                    if self.config.HA_DISCOVERY:
+                        title = label
+                        for char in (" ", "-"):
+                            label = label.lower().replace(char, "_")
+                        device = self.config.COMPUTER_NAME
+                        for char in (" ", "-"):
+                            device = device.replace(char, "_")
+                        ha_object_id = "s2m_"+device+"_{}_{}".format(label, "storage")
+                        ha_name = "{} Storage".format(title).title()
+                        dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                        haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                             name=ha_name, object_id=ha_object_id,
+                                             state_topic=final_topic, device=device)
+                        self.myqtt.publish(haconfig[0], haconfig[1])
             elif self.config.PVE_SYSTEM:
                 storage_data = self.pve.getNodeStorage(self.config.PVE_NODE_NAME)["data"]
                 logging.debug(storage_data)
                 for storage in storage_data:
-                    name = storage["storage"]
+                    label = storage["storage"]
                     pct = int(float(storage["used_fraction"]) * 100)
-                    final_topic = base + name
-                    logging.info("Storage: {}: {}%".format(name, pct))
+                    final_topic = base + label
+                    logging.info("Storage: {}: {}%".format(label, pct))
                     self.myqtt.publish(final_topic, pct)
+                    if self.config.HA_DISCOVERY:
+                        title = label
+                        for char in (" ", "-"):
+                            label = label.lower().replace(char, "_")
+                        device = self.config.COMPUTER_NAME
+                        for char in (" ", "-"):
+                            device = device.replace(char, "_")
+                        ha_object_id = "s2m_"+device+"_{}_{}".format(label, "storage")
+                        ha_name = "{} Storage".format(title).title()
+                        dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                        haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                             name=ha_name, object_id=ha_object_id,
+                                             state_topic=final_topic, device=device)
+                        self.myqtt.publish(haconfig[0], haconfig[1])
             else:
                 logging.warning("Hmm, something went wrong")
         except Exception as e:
@@ -188,7 +231,8 @@ class System2Mqtt(object):
 
     def publish_cpu_temp(self):
         logging.debug("")
-        final_topic = self.config.MQTT_BASE_TOPIC + "/cpu/temperature"
+        slug = "/cpu/temperature"
+        final_topic = self.config.MQTT_BASE_TOPIC + slug
         try:
             if self.config.MACOS:
                 try:
@@ -199,6 +243,18 @@ class System2Mqtt(object):
                     temp = get_temps(procpath=self.config.PROCPATH)
                 logging.info("CPU temperature: {}°C".format(temp))
                 self.myqtt.publish(final_topic, temp)
+                if self.config.HA_DISCOVERY:
+                    title = self.config.COMPUTER_NAME + " CPU Temperature"
+                    device = self.config.COMPUTER_NAME
+                    for char in (" ", "-"):
+                        device = device.replace(char, "_")
+                    ha_object_id = "s2m_" + device + "_{}".format("cpu_temperature")
+                    ha_name = title.title()
+                    dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                    haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                         name=ha_name, object_id=ha_object_id,
+                                         state_topic=final_topic, device=device)
+                    self.myqtt.publish(haconfig[0], haconfig[1])
             else:
                 try:
                     temps = get_temps(procpath=self.config.PROCPATH)["coretemp"]
@@ -210,23 +266,60 @@ class System2Mqtt(object):
                 highest = max(c_list)
                 logging.info("CPU temperature: {}°C".format(highest))
                 self.myqtt.publish(final_topic, str(highest))
+                if self.config.HA_DISCOVERY:
+                    title = self.config.COMPUTER_NAME + " CPU Temperature"
+                    device = self.config.COMPUTER_NAME
+                    for char in (" ", "-"):
+                        device = device.replace(char, "_")
+                    ha_object_id = "s2m_" + device + "_{}".format("cpu_temperature")
+                    ha_name = title.title()
+                    dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                    haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                         name=ha_name, object_id=ha_object_id,
+                                         state_topic=final_topic, device=device)
+                    self.myqtt.publish(haconfig[0], haconfig[1])
         except Exception as e:
             logging.error(e)
 
     def publish_cpu_usage(self):
         logging.debug("")
-        final_topic = self.config.MQTT_BASE_TOPIC + "/cpu/usage"
+        slug = "/cpu/usage"
+        final_topic = self.config.MQTT_BASE_TOPIC + slug
         try:
             if not self.config.PVE_SYSTEM:
                 cpu = get_cpu(procpath=self.config.PROCPATH)
                 logging.info("CPU usage: {}%".format(cpu))
                 self.myqtt.publish(final_topic, cpu)
+                if self.config.HA_DISCOVERY:
+                    title = self.config.COMPUTER_NAME + " CPU Usage"
+                    device = self.config.COMPUTER_NAME
+                    for char in (" ", "-"):
+                        device = device.replace(char, "_")
+                    ha_object_id = "s2m_" + device + "_{}".format("cpu")
+                    ha_name = title.title()
+                    dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                    haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                         name=ha_name, object_id=ha_object_id,
+                                         state_topic=final_topic, device=device)
+                    self.myqtt.publish(haconfig[0], haconfig[1])
             elif self.config.PVE_SYSTEM:
                 cpu = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["cpu"]
                 pct = int(float(cpu) * 100)
                 logging.info("CPU usage: {}%".format(pct))
                 if pct > 0:
                     self.myqtt.publish(final_topic, pct)
+                    if self.config.HA_DISCOVERY:
+                        title = self.config.COMPUTER_NAME + " CPU Usage"
+                        device = self.config.COMPUTER_NAME
+                        for char in (" ", "-"):
+                            device = device.replace(char, "_")
+                        ha_object_id = "s2m_" + device + "_{}".format("cpu")
+                        ha_name = title.title()
+                        dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                        haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                             name=ha_name, object_id=ha_object_id,
+                                             state_topic=final_topic, device=device)
+                        self.myqtt.publish(haconfig[0], haconfig[1])
             else:
                 logging.warning("Hmm, something went wrong")
         except Exception as e:
@@ -234,12 +327,25 @@ class System2Mqtt(object):
 
     def publish_ram(self):
         logging.debug("Getting ram")
-        final_topic = self.config.MQTT_BASE_TOPIC + "/memory"
+        slug = "/memory"
+        final_topic = self.config.MQTT_BASE_TOPIC + slug
         try:
             if not self.config.PVE_SYSTEM:
                 mem = get_memory(procpath=self.config.PROCPATH)
                 logging.info("Memory Used: {}%".format(mem))
                 self.myqtt.publish(final_topic, mem)
+                if self.config.HA_DISCOVERY:
+                    title = self.config.COMPUTER_NAME + " Memory Usage"
+                    device = self.config.COMPUTER_NAME
+                    for char in (" ", "-"):
+                        device = device.replace(char, "_")
+                    ha_object_id = "s2m_" + device + "_{}".format("memory")
+                    ha_name = title.title()
+                    dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                    haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                         name=ha_name, object_id=ha_object_id,
+                                         state_topic=final_topic, device=device)
+                    self.myqtt.publish(haconfig[0], haconfig[1])
             elif self.config.PVE_SYSTEM:
                 ram_dict = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["memory"]
                 used = float(ram_dict["used"])
@@ -247,6 +353,18 @@ class System2Mqtt(object):
                 pct = int((used / total) * 100)
                 logging.info("Ram usage: {}%".format(pct))
                 self.myqtt.publish(final_topic, pct)
+                if self.config.HA_DISCOVERY:
+                    title = self.config.COMPUTER_NAME + " Memory Usage"
+                    device = self.config.COMPUTER_NAME
+                    for char in (" ", "-"):
+                        device = device.replace(char, "_")
+                    ha_object_id = "s2m_" + device + "_{}".format("memory")
+                    ha_name = title.title()
+                    dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                    haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                         name=ha_name, object_id=ha_object_id,
+                                         state_topic=final_topic, device=device)
+                    self.myqtt.publish(haconfig[0], haconfig[1])
             else:
                 logging.warning("Not MacOS or PVE system")
         except Exception as e:
