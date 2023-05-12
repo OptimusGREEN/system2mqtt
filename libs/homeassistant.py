@@ -56,7 +56,9 @@ def ha_config(topic_template, topic_slug, name, object_id, state_topic, device,
         "state_topic": state_topic,
         "device": {
             "identifiers": device,
-            "name": device.title()
+            "name": "S2M " + device.title(),
+            "manufacturer": "TeamGREEN Tech",
+            "model": "System2Mqtt"
         }
     }
     if availability_topic:
