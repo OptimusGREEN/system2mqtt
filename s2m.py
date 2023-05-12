@@ -373,20 +373,48 @@ class System2Mqtt(object):
     def publish_argon(self):
         if self.config.ARGON:
             logging.debug("Getting fan speed")
-            final_topic = self.config.MQTT_BASE_TOPIC + "/fan_speed"
+            slug = "/fan_speed"
+            final_topic = self.config.MQTT_BASE_TOPIC + slug
             try:
                 speed = get_argon_fan_speed()
                 logging.info("Fan Speed: {}%".format(speed))
                 self.myqtt.publish(final_topic, speed)
+                if self.config.HA_DISCOVERY:
+                    title = "Argon Fan Speed"
+                    device = self.config.COMPUTER_NAME
+                    for char in (" ", "-"):
+                        device = device.replace(char, "_")
+                    ha_object_id = "s2m_" + device + "_{}".format("fan_speed")
+                    ha_name = "{}".format(title).title()
+                    dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                    haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                         name=ha_name, object_id=ha_object_id,
+                                         state_topic=final_topic, device=device)
+                    self.myqtt.publish(haconfig[0], haconfig[1])
             except Exception as e:
                 logging.error(e)
             logging.debug("Getting hdd temperatures")
+            slug = "/disks/temperature"
             try:
                 temps = gethddtemp()
                 for disk, temp in temps.items():
-                    final_topic = self.config.MQTT_BASE_TOPIC + "/disks/temperature/{}".format(disk)
+                    final_topic = self.config.MQTT_BASE_TOPIC + slug + "/" +disk
                     logging.info("{}: {}°C".format(disk, temp))
                     self.myqtt.publish(final_topic, temp)
+                    if self.config.HA_DISCOVERY:
+                        title = disk
+                        for char in (" ", "-"):
+                            disk = disk.lower().replace(char, "_")
+                        device = self.config.COMPUTER_NAME
+                        for char in (" ", "-"):
+                            device = device.replace(char, "_")
+                        ha_object_id = "s2m_"+device+"_{}_{}".format(disk, "temperature")
+                        ha_name = "{} Temperature".format(title).title()
+                        dtt = self.ha_discovery_template.format("{}", ha_object_id)
+                        haconfig = ha_config(topic_template=dtt, topic_slug=slug,
+                                             name=ha_name, object_id=ha_object_id,
+                                             state_topic=final_topic, device=device)
+                        self.myqtt.publish(haconfig[0], haconfig[1])
             except Exception as e:
                 logging.error(e)
 

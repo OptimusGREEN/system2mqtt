@@ -13,7 +13,7 @@ def get_config_attributes(topic_slug):
         ha_icon = "mdi:harddisk"
         ha_unit = "%"
         ha_class ="None"
-    elif topic_slug == "/cpu/temperature":
+    elif topic_slug == "/cpu/temperature" or "/disks/temperature":
         ha_type = "sensor"
         ha_class = "temperature"
         ha_icon = "mdi:thermometer"
