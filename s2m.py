@@ -165,7 +165,7 @@ class System2Mqtt(object):
                         dtt = self.ha_discovery_template.format("{}", ha_object_id)
                         haconfig = ha_config(topic_template=dtt, topic_slug=slug,
                                              name=ha_name, object_id=ha_object_id,
-                                             state_topic=final_topic, device=device, payload_on="mounted", off_delay=self.publish_period+10)
+                                             state_topic=final_topic, device=device, payload_on=1, payload_off=0)
                         self.myqtt.publish(haconfig[0], haconfig[1])
             else:
                 logging.warning("Hmm, something went wrong")
