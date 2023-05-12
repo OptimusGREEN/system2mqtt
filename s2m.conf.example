@@ -7,7 +7,7 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 #OLD_LOG_FILENAME=old_system2mqtt.log            ### Optional: default: old_system2mqtt.log 
 #DEBUG_LOG=True                                  ### Optional: default: False
 
-#PUBLISH_PERIOD=30                               ### Optional: default: 30 (seconds)
+#PUBLISH_PERIOD=60                               ### Optional: default: 60 (seconds)
 #MQTT_BASE_TOPIC=system2mqtt/MyTestComputer1     ### Optional: default: system2mqtt/<COMPUTER_NAME>
 #MQTT_HOST=192.168.0.14                          ### Optional: default: localhost
 #MQTT_USER=myusername                            ### Optional: default: None
