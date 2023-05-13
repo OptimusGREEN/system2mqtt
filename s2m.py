@@ -225,7 +225,7 @@ class System2Mqtt(object):
             if not self.config.PVE_SYSTEM:
                 disks = get_disks(procpath=self.config.PROCPATH)
                 for d in disks:
-                    space = get_disk_space(d, procpath=self.config.PROCPATH)
+                    # space = get_disk_space(d, procpath=self.config.PROCPATH)
                     if d == "/":
                         label = "sysroot"
                     else:
@@ -245,6 +245,7 @@ class System2Mqtt(object):
                                 pass
                             else:
                                 continue
+                    space = get_disk_space(d, procpath=self.config.PROCPATH)
                     final_topic = base + label
                     self.myqtt.publish(final_topic, space)
                     if self.config.HA_DISCOVERY and not self.first_loop_done:
