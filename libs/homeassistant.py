@@ -1,10 +1,10 @@
 import logging
 import json
 
-def ha_config(topic_template, name, object_id, state_topic, device, entity_type,
+def ha_config(discovery_topic, name, object_id, state_topic, device, entity_type,
               icon=None, device_class=None, unit=None, availability_topic=None,
               payload_on=None, payload_off=None, off_delay=None):
-    discovery_topic = topic_template.format(entity_type)
+    logging.debug(entity_type)
     payload = {
         "name": name,
         "unique_id": object_id,
