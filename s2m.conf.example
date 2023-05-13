@@ -17,6 +17,9 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 
 #ARGONFAN=True                                   ### Optional: default: False (Get fan speed from pi argon case)
 
+#STORAGE_INCLUDE=["sysroot", "myexternaldrive"]  ### Optional: default: False (MUST be a list. include will always be used over exclude)
+#STORAGE_EXCLUDE=["idontwantthisdriveincluded"]  ### Optional: default: False (MUST be a list. will be ignored if include is used)
+
 ##### Proxmox
 #PVE_SYSTEM=False                                ### Optional: default: False (Set to true if computer is running proxmox)
 
