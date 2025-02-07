@@ -8,11 +8,11 @@ StartLimitBurst=5
 
 [Service]
 Type=simple
-User=bernard
+User=john
 Restart=on-failure
 RestartSec=2s
 
-ExecStart=/home/bernard/scripts/python_scripts/system2mqtt/run.py
+ExecStart=/usr/bin/python3 /home/john/scripts/system2mqtt/run.py
 
 [Install]
 WantedBy=multi-user.target
