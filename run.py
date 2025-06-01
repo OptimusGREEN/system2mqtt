@@ -64,15 +64,25 @@ def install_dependencies():
     
     try:
         # Upgrade pip first
+        logging.info("Upgrading pip...")
         result = subprocess.run([pip_executable, "install", "--upgrade", "pip"], 
                               capture_output=True, text=True, check=True)
         logging.info("pip upgraded successfully")
         
-        # Install dependencies
-        result = subprocess.run([pip_executable, "install", "-r", deps_file], 
+        # Install dependencies with verbose output
+        logging.info("Installing dependencies...")
+        result = subprocess.run([pip_executable, "install", "-r", deps_file, "-v"], 
                               capture_output=True, text=True, check=True)
         logging.info("Dependencies installed successfully")
-        return True
+        
+        # Verify installation by checking each package
+        if verify_dependencies():
+            logging.info("All dependencies verified successfully")
+            return True
+        else:
+            logging.error("Dependency verification failed")
+            return False
+            
     except subprocess.CalledProcessError as e:
         logging.error(f"Failed to install dependencies: {e}")
         if e.stdout:
@@ -82,6 +92,50 @@ def install_dependencies():
         return False
     except Exception as e:
         logging.error(f"Unexpected error during dependency installation: {e}")
+        return False
+
+def verify_dependencies():
+    """Verify that all dependencies are properly installed"""
+    deps_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "deps.txt")
+    python_executable = get_python_executable()
+    
+    try:
+        # Read the dependencies file
+        with open(deps_file, 'r') as f:
+            deps = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+        
+        # Test each dependency
+        for dep in deps:
+            # Extract package name (handle cases like "package>=1.0.0")
+            package_name = dep.split('>=')[0].split('==')[0].split('<')[0].split('>')[0].strip()
+            
+            logging.info(f"Verifying {package_name}...")
+            try:
+                result = subprocess.run([python_executable, "-c", f"import {package_name}"], 
+                                      capture_output=True, text=True, check=True)
+                logging.info(f"✓ {package_name} verified")
+            except subprocess.CalledProcessError:
+                # Some packages have different import names, try common alternatives
+                alt_names = {
+                    'python-dotenv': 'dotenv',
+                    'paho-mqtt': 'paho.mqtt'
+                }
+                if package_name in alt_names:
+                    try:
+                        result = subprocess.run([python_executable, "-c", f"import {alt_names[package_name]}"], 
+                                              capture_output=True, text=True, check=True)
+                        logging.info(f"✓ {package_name} verified (as {alt_names[package_name]})")
+                        continue
+                    except:
+                        pass
+                
+                logging.error(f"✗ Failed to verify {package_name}")
+                return False
+        
+        return True
+        
+    except Exception as e:
+        logging.error(f"Error verifying dependencies: {e}")
         return False
 
 def setup_venv():
@@ -97,8 +151,27 @@ def setup_venv():
         try:
             result = subprocess.run([python_executable, "--version"], 
                                   capture_output=True, text=True, check=True)
-            logging.info(f"Using existing virtual environment: {result.stdout.strip()}")
-            return True
+            logging.info(f"Found virtual environment: {result.stdout.strip()}")
+            
+            # Check if dependencies are installed
+            if verify_dependencies():
+                logging.info("All dependencies verified, using existing virtual environment")
+                return True
+            else:
+                logging.warning("Dependencies missing or broken, reinstalling...")
+                if not install_dependencies():
+                    logging.error("Failed to install dependencies in existing venv")
+                    # Try recreating the entire venv
+                    logging.info("Recreating virtual environment...")
+                    import shutil
+                    try:
+                        shutil.rmtree(venv_path)
+                    except Exception as cleanup_error:
+                        logging.error(f"Failed to remove broken venv: {cleanup_error}")
+                        return False
+                else:
+                    return True
+                    
         except Exception as e:
             logging.warning(f"Existing virtual environment appears broken: {e}")
             logging.info("Recreating virtual environment...")
@@ -179,14 +252,34 @@ if __name__ == '__main__':
     # Setup logging first
     setup_logging()
     
+    # Check for force reinstall flag
+    force_reinstall = False
+    args = sys.argv[1:]
+    if '--force-reinstall' in args:
+        force_reinstall = True
+        args.remove('--force-reinstall')
+        logging.info("Force reinstall requested - will recreate virtual environment")
+        
+        # Remove existing venv
+        venv_path = get_venv_path()
+        if os.path.exists(venv_path):
+            import shutil
+            try:
+                shutil.rmtree(venv_path)
+                logging.info("Removed existing virtual environment")
+            except Exception as e:
+                logging.error(f"Failed to remove existing venv: {e}")
+                sys.exit(1)
+    
     # Setup virtual environment and dependencies
     if not setup_venv():
         logging.error("Failed to setup virtual environment. Exiting.")
+        logging.error("You can try running with --force-reinstall to recreate the virtual environment")
         sys.exit(1)
     
     # Determine config file
-    if len(sys.argv) > 1:
-        config_file = sys.argv[1]
+    if len(args) > 0:
+        config_file = args[0]
     else:
         config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "s2m.conf")
     
