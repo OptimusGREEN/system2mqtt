@@ -169,7 +169,7 @@ class System2Mqtt(object):
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id,
                                              state_topic=final_topic, device=device, payload_on="mounted",
                                              off_delay=int(self.publish_period)+10, entity_type=ha_type, device_class=ha_class)
-                        self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                        self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
                         logging.debug("T: {}".format(haconfig[0]))
                         logging.debug("P: {}".format(haconfig[1]))
                     else:
@@ -329,7 +329,7 @@ class System2Mqtt(object):
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
                                          device=device, entity_type=ha_type, unit=ha_unit, device_class=ha_class)
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             else:
                 try:
                     temps = get_temps(procpath=self.config.PROCPATH)["coretemp"]
@@ -351,7 +351,7 @@ class System2Mqtt(object):
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
                                          device=device, entity_type=ha_type, unit=ha_unit, device_class=ha_class)
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
         except Exception as e:
             logging.error(e, exc_info=True)
 
@@ -377,7 +377,7 @@ class System2Mqtt(object):
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
                                          device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             elif self.config.PVE_SYSTEM:
                 cpu = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["cpu"]
                 pct = int(float(cpu) * 100)
@@ -394,7 +394,7 @@ class System2Mqtt(object):
                         dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
                                              device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
-                        self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                        self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             else:
                 logging.warning("Hmm, something went wrong")
         except Exception as e:
@@ -422,7 +422,7 @@ class System2Mqtt(object):
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
                                          device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             elif self.config.PVE_SYSTEM:
                 ram_dict = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["memory"]
                 used = float(ram_dict["used"])
@@ -440,7 +440,7 @@ class System2Mqtt(object):
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
                                          device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             else:
                 logging.warning("Not MacOS or PVE system")
         except Exception as e:
@@ -469,7 +469,7 @@ class System2Mqtt(object):
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id,
                                          state_topic=final_topic, device=device, icon=ha_icon,
                                          entity_type=ha_type, unit=ha_unit)
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             except Exception as e:
                 logging.error(e, exc_info=True)
             logging.debug("Getting hdd temperatures")
@@ -497,7 +497,7 @@ class System2Mqtt(object):
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id,
                                              state_topic=final_topic, device=device, entity_type=ha_type,
                                              unit=ha_unit, device_class=ha_class)
-                        self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+                        self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             except Exception as e:
                 logging.error(e, exc_info=True)
 
