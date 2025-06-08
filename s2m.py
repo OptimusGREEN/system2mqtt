@@ -58,6 +58,7 @@ class System2Mqtt(object):
         setupLogging(self.config.DEBUG_LOG, self.config)
         logging.debug("logging has been set up")
         self.lwt_topic = self.config.MQTT_BASE_TOPIC + "/LWT"
+        self.availability_topic = self.lwt_topic
 
         self.myqtt = Myqtt(host=self.config.MQTT_HOST,
                             port=self.config.MQTT_PORT,
@@ -168,7 +169,10 @@ class System2Mqtt(object):
                         logging.debug("dtt: {}".format(dtt))
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id,
                                              state_topic=final_topic, device=device, payload_on="mounted",
-                                             off_delay=int(self.publish_period)+10, entity_type=ha_type, device_class=ha_class)
+                                             off_delay=int(self.publish_period)+10, entity_type=ha_type, device_class=ha_class, 
+                                             availability_topic=self.availability_topic, 
+                                             payload_available="online",
+                                             payload_not_available="offline")
                         self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
                         logging.debug("T: {}".format(haconfig[0]))
                         logging.debug("P: {}".format(haconfig[1]))
@@ -207,7 +211,10 @@ class System2Mqtt(object):
                         dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id,
                                              entity_type = ha_type, device_class = ha_class,
-                                             state_topic=final_topic, device=device, payload_on=1, payload_off=0)
+                                             state_topic=final_topic, device=device, payload_on=1, payload_off=0, 
+                                             availability_topic=self.availability_topic, 
+                                             payload_available="online",
+                                             payload_not_available="offline")
                         self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             else:
                 logging.warning("Hmm, something went wrong")
@@ -259,7 +266,10 @@ class System2Mqtt(object):
                         ha_name = "{} Storage".format(title).title()
                         dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
-                                             device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
+                                             device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit, 
+                                             availability_topic=self.availability_topic, 
+                                             payload_available="online",
+                                             payload_not_available="offline")
                         self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             elif self.config.PVE_SYSTEM:
                 storage_data = self.pve.getNodeStorage(self.config.PVE_NODE_NAME)["data"]
@@ -294,7 +304,10 @@ class System2Mqtt(object):
                         ha_name = "{} Storage".format(title).title()
                         dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
-                                             device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
+                                             device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit, 
+                                             availability_topic=self.availability_topic, 
+                                             payload_available="online",
+                                             payload_not_available="offline")
                         self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             else:
                 logging.warning("Hmm, something went wrong")
@@ -328,7 +341,10 @@ class System2Mqtt(object):
                     ha_name = title.title()
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
-                                         device=device, entity_type=ha_type, unit=ha_unit, device_class=ha_class)
+                                         device=device, entity_type=ha_type, unit=ha_unit, device_class=ha_class, 
+                                         availability_topic=self.availability_topic, 
+                                         payload_available="online",
+                                         payload_not_available="offline")
                     self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             else:
                 try:
@@ -350,7 +366,10 @@ class System2Mqtt(object):
                     ha_name = title.title()
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
-                                         device=device, entity_type=ha_type, unit=ha_unit, device_class=ha_class)
+                                         device=device, entity_type=ha_type, unit=ha_unit, device_class=ha_class, 
+                                         availability_topic=self.availability_topic, 
+                                         payload_available="online",
+                                         payload_not_available="offline")
                     self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
         except Exception as e:
             logging.error(e, exc_info=True)
@@ -376,7 +395,10 @@ class System2Mqtt(object):
                     ha_name = title.title()
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
-                                         device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
+                                         device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit, 
+                                         availability_topic=self.availability_topic, 
+                                         payload_available="online",
+                                         payload_not_available="offline")
                     self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             elif self.config.PVE_SYSTEM:
                 cpu = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["cpu"]
@@ -393,7 +415,10 @@ class System2Mqtt(object):
                         ha_name = title.title()
                         dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
-                                             device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
+                                             device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit, 
+                                             availability_topic=self.availability_topic, 
+                                             payload_available="online",
+                                             payload_not_available="offline")
                         self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             else:
                 logging.warning("Hmm, something went wrong")
@@ -421,7 +446,10 @@ class System2Mqtt(object):
                     ha_name = title.title()
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
-                                         device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
+                                         device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit, 
+                                         availability_topic=self.availability_topic, 
+                                         payload_available="online",
+                                         payload_not_available="offline")
                     self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             elif self.config.PVE_SYSTEM:
                 ram_dict = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["memory"]
@@ -439,7 +467,10 @@ class System2Mqtt(object):
                     ha_name = title.title()
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id, state_topic=final_topic,
-                                         device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit)
+                                         device=device, icon=ha_icon, entity_type=ha_type, unit=ha_unit, 
+                                         availability_topic=self.availability_topic, 
+                                         payload_available="online",
+                                         payload_not_available="offline")
                     self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             else:
                 logging.warning("Not MacOS or PVE system")
@@ -468,7 +499,10 @@ class System2Mqtt(object):
                     dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                     haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id,
                                          state_topic=final_topic, device=device, icon=ha_icon,
-                                         entity_type=ha_type, unit=ha_unit)
+                                         entity_type=ha_type, unit=ha_unit, 
+                                         availability_topic=self.availability_topic, 
+                                         payload_available="online",
+                                         payload_not_available="offline")
                     self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             except Exception as e:
                 logging.error(e, exc_info=True)
@@ -496,15 +530,40 @@ class System2Mqtt(object):
                         dtt = self.ha_discovery_template.format(ha_type, ha_object_id)
                         haconfig = ha_config(discovery_topic=dtt, name=ha_name, object_id=ha_object_id,
                                              state_topic=final_topic, device=device, entity_type=ha_type,
-                                             unit=ha_unit, device_class=ha_class)
+                                             unit=ha_unit, device_class=ha_class, 
+                                             availability_topic=self.availability_topic, 
+                                             payload_available="online",
+                                             payload_not_available="offline")
                         self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
             except Exception as e:
                 logging.error(e, exc_info=True)
 
+    def publish_lwt_binary_sensor(self):
+        if self.config.HA_DISCOVERY:
+            ha_type = "binary_sensor"
+            ha_class = "connectivity"
+            device = self.config.COMPUTER_NAME.replace(" ", "_").replace("-", "_")
+            ha_object_id = f"s2m_{device}_lwt"
+            ha_name = f"{self.config.COMPUTER_NAME} LWT"
+            discovery_topic = self.ha_discovery_template.format(ha_type, ha_object_id)
+            haconfig = ha_config(
+                discovery_topic=discovery_topic,
+                name=ha_name,
+                object_id=ha_object_id,
+                state_topic=self.lwt_topic,
+                device=device,
+                entity_type=ha_type,
+                device_class=ha_class,
+                payload_on="online",
+                payload_off="offline"
+            )
+            self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+
     def publish_all(self):
         logging.debug("...publishing")
         self.myqtt.publish(self.lwt_topic, 'online')
-        funcs = [self.publish_mount_state,
+        funcs = [self.publish_lwt_binary_sensor,
+                 self.publish_mount_state,
                  self.publish_disk_space,
                  self.publish_cpu_temp,
                  self.publish_cpu_usage,
@@ -553,7 +612,7 @@ class System2Mqtt(object):
             self.auto_reconnect =False
             logging.info("Quit called....")
             self.myqtt.publish(self.config.MQTT_BASE_TOPIC + "/callbacks/s2m_quit", "")
-            self.myqtt.publish(self.lwt_topic, "exited", retain=True)
+            self.myqtt.publish(self.lwt_topic, "offline", retain=True)
             client.loop_stop()
             client.disconnect()
     
