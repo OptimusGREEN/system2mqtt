@@ -538,10 +538,32 @@ class System2Mqtt(object):
             except Exception as e:
                 logging.error(e, exc_info=True)
 
+    def publish_lwt_binary_sensor(self):
+        if self.config.HA_DISCOVERY:
+            ha_type = "binary_sensor"
+            ha_class = "connectivity"
+            device = self.config.COMPUTER_NAME.replace(" ", "_").replace("-", "_")
+            ha_object_id = f"s2m_{device}_lwt"
+            ha_name = f"{self.config.COMPUTER_NAME} LWT"
+            discovery_topic = self.ha_discovery_template.format(ha_type, ha_object_id)
+            haconfig = ha_config(
+                discovery_topic=discovery_topic,
+                name=ha_name,
+                object_id=ha_object_id,
+                state_topic=self.lwt_topic,
+                device=device,
+                entity_type=ha_type,
+                device_class=ha_class,
+                payload_on="online",
+                payload_off="offline"
+            )
+            self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
+
     def publish_all(self):
         logging.debug("...publishing")
         self.myqtt.publish(self.lwt_topic, 'online')
-        funcs = [self.publish_mount_state,
+        funcs = [self.publish_lwt_binary_sensor,
+                 self.publish_mount_state,
                  self.publish_disk_space,
                  self.publish_cpu_temp,
                  self.publish_cpu_usage,
