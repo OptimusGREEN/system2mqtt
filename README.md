@@ -5,6 +5,8 @@ Send cpu, memory, disk usage to mqtt periodically.
 
 just clone the repo, alter the config file and run it with python3
 
+it will attempt to create a python virtual environment and install required dependencies and then run.
+
 see the below config example with notes at the bottom.
 
 ```
