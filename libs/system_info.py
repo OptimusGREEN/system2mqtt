@@ -144,32 +144,43 @@ def get_cpu(procpath=None):
 # Argon ONE I2C configuration
 
 def get_argon_fan_speed():
-    # 1. Read current CPU temperature
+    # 1. Get current CPU temperature
     try:
         with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
             temp = float(f.read()) / 1000
-    except:
-        return "Error reading temperature"
+    except Exception:
+        return 0
 
     # 2. Parse the configuration file
     config_path = "/etc/argononed.conf"
     if not os.path.exists(config_path):
-        return "Config file not found"
+        return 0
 
     thresholds = {}
-    with open(config_path, "r") as f:
-        for line in f:
-            if "=" in line:
-                t, s = line.strip().split("=")
-                thresholds[float(t)] = int(s)
+    try:
+        with open(config_path, "r") as f:
+            for line in f:
+                if "=" in line:
+                    try:
+                        # Split and clean the line
+                        t_str, s_str = line.strip().split("=")
+                        # Only store if both are valid numbers
+                        thresholds[float(t_str)] = int(s_str)
+                    except ValueError:
+                        # Skips lines like "[Argon One]" or "Fan Speed=..."
+                        continue
+    except Exception:
+        return 0
 
-    # 3. Determine speed based on thresholds (Sorted descending)
-    # Checks from highest temp down to lowest
+    # 3. Determine speed based on thresholds (highest temp first)
+    if not thresholds:
+        return 0
+
     for t in sorted(thresholds.keys(), reverse=True):
         if temp >= t:
             return thresholds[t]
 
-    return 0  # Default off if below all thresholds
+    return 0
 
 ###### MAC SPECIFIC #####
 
