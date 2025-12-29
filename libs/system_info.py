@@ -144,43 +144,41 @@ def get_cpu(procpath=None):
 # Argon ONE I2C configuration
 
 def get_argon_fan_speed():
-    # 1. Get current CPU temperature
+    # 1. Read current CPU temperature
     try:
         with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+            # sysfs returns temp in millidegrees (e.g., 52345 = 52.345)
             temp = float(f.read()) / 1000
-    except Exception:
+    except:
         return 0
 
-    # 2. Parse the configuration file
+    # 2. Parse the config file
     config_path = "/etc/argononed.conf"
-    if not os.path.exists(config_path):
-        return 0
-
     thresholds = {}
-    try:
+    if os.path.exists(config_path):
         with open(config_path, "r") as f:
             for line in f:
                 if "=" in line:
                     try:
-                        # Split and clean the line
                         t_str, s_str = line.strip().split("=")
-                        # Only store if both are valid numbers
-                        thresholds[float(t_str)] = int(s_str)
+                        # Ensure we convert both sides to numbers
+                        thresholds[float(t_str)] = int(float(s_str))
                     except ValueError:
-                        # Skips lines like "[Argon One]" or "Fan Speed=..."
                         continue
-    except Exception:
-        return 0
 
-    # 3. Determine speed based on thresholds (highest temp first)
-    if not thresholds:
-        return 0
-
+    # 3. Determine speed (Sort highest temp to lowest)
+    speed = 0
+    # sorting ensures we check 65, then 60, then 55, then 50...
     for t in sorted(thresholds.keys(), reverse=True):
         if temp >= t:
-            return thresholds[t]
+            speed = thresholds[t]
+            break
 
-    return 0
+    # 4. Argon Safety Floor: 1-24% is always rounded to 25%
+    if 0 < speed < 25:
+        return 25
+
+    return speed
 
 ###### MAC SPECIFIC #####
 
