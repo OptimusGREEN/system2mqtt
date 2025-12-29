@@ -3,4 +3,3 @@ psutil
 requests
 python-dotenv
 zfslib
-smbus2

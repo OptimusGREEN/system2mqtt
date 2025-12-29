@@ -3,7 +3,6 @@ import platform
 import subprocess
 import socket
 import logging
-import smbus2
 
 # cpu_pct = psutil.cpu_percent(interval=0.1, percpu=False)
 # load = psutil.getloadavg()
@@ -144,16 +143,32 @@ def get_cpu(procpath=None):
 # Argon ONE I2C configuration
 
 def get_argon_fan_speed():
-    I2C_BUS = 1
-    ADDRESS = 0x1a
+    # 1. Read current CPU temperature
     try:
-        bus = smbus2.SMBus(I2C_BUS)
-        # Attempt to read the speed byte
-        speed = bus.read_byte(ADDRESS)
-        bus.close()
-        return speed
-    except Exception as e:
-        return f"Error reading fan speed: {e}"
+        with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+            temp = float(f.read()) / 1000
+    except:
+        return "Error reading temperature"
+
+    # 2. Parse the configuration file
+    config_path = "/etc/argononed.conf"
+    if not os.path.exists(config_path):
+        return "Config file not found"
+
+    thresholds = {}
+    with open(config_path, "r") as f:
+        for line in f:
+            if "=" in line:
+                t, s = line.strip().split("=")
+                thresholds[float(t)] = int(s)
+
+    # 3. Determine speed based on thresholds (Sorted descending)
+    # Checks from highest temp down to lowest
+    for t in sorted(thresholds.keys(), reverse=True):
+        if temp >= t:
+            return thresholds[t]
+
+    return 0  # Default off if below all thresholds
 
 ###### MAC SPECIFIC #####
 
