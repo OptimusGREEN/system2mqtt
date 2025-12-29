@@ -15,7 +15,7 @@ COMPUTER_NAME=MyTestComputer1                   # Required:
 
 #PROCPATH=/path/to/proc                          ### Optional: default: /proc (linux only, in case /proc is somewhere else)
 
-#ARGONFAN=True                                   ### Optional: default: False (Get fan speed from pi argon case)
+#ARGON=True                                      ### Optional: default: False (Get fan speed from pi argon case)
 
 #STORAGE_INCLUDE=["sysroot", "myexternaldrive"]  ### Optional: default: False (MUST be a list. include will always be used over exclude)
 #STORAGE_EXCLUDE=["idontwantthisdriveincluded"]  ### Optional: default: False (MUST be a list. will be ignored if include is used)
