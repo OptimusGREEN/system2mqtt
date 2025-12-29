@@ -3,6 +3,7 @@ import platform
 import subprocess
 import socket
 import logging
+import smbus2
 
 # cpu_pct = psutil.cpu_percent(interval=0.1, percpu=False)
 # load = psutil.getloadavg()
@@ -139,13 +140,20 @@ def get_cpu(procpath=None):
     cpu = psutil.cpu_percent(interval=1)
     return cpu
 
+
+# Argon ONE I2C configuration
+
 def get_argon_fan_speed():
-    with open("/tmp/fanspeed.txt") as e:
-        speed = e.read()
+    I2C_BUS = 1
+    ADDRESS = 0x1a
     try:
-        return int(float(speed))
-    except FileNotFoundError:
-        return None
+        bus = smbus2.SMBus(I2C_BUS)
+        # Attempt to read the speed byte
+        speed = bus.read_byte(ADDRESS)
+        bus.close()
+        return speed
+    except Exception as e:
+        return f"Error reading fan speed: {e}"
 
 ###### MAC SPECIFIC #####
 
