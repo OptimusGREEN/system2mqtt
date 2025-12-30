@@ -571,7 +571,7 @@ class System2Mqtt(object):
                  self.publish_argon]
         for f in funcs:
             f()
-        logging.info("Discovery complete!")
+        logging.info("publish complete!")
         self.first_loop_done = True
 
 
