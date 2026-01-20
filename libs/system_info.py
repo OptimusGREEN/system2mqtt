@@ -148,7 +148,7 @@ def get_argon_fan_speed():
     fanspeedfile = "/tmp/fanspeed.txt"
     if os.path.exists(fanspeedfile):
         with open(fanspeedfile, "r") as f:
-            speed = f
+            speed = int(f)
     else:
         try:
             with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
