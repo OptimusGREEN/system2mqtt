@@ -145,34 +145,39 @@ def get_cpu(procpath=None):
 
 def get_argon_fan_speed():
     # 1. Read current CPU temperature
-    try:
-        with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
-            # sysfs returns temp in millidegrees (e.g., 52345 = 52.345)
-            temp = float(f.read()) / 1000
-    except:
-        return 0
-
-    # 2. Parse the config file
-    config_path = "/etc/argononed.conf"
-    thresholds = {}
-    if os.path.exists(config_path):
+    if os.path.exists("/tmp/fanspeed.txt"):
         with open(config_path, "r") as f:
-            for line in f:
-                if "=" in line:
-                    try:
-                        t_str, s_str = line.strip().split("=")
-                        # Ensure we convert both sides to numbers
-                        thresholds[float(t_str)] = int(float(s_str))
-                    except ValueError:
-                        continue
+            speed = f
+    else:
+        try:
+            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+                # sysfs returns temp in millidegrees (e.g., 52345 = 52.345)
+                temp = float(f.read()) / 1000
+        except:
+            return 0
 
-    # 3. Determine speed (Sort highest temp to lowest)
-    speed = 0
-    # sorting ensures we check 65, then 60, then 55, then 50...
-    for t in sorted(thresholds.keys(), reverse=True):
-        if temp >= t:
-            speed = thresholds[t]
-            break
+        # 2. Parse the config file
+        poss_configs = ["/etc/argononed.conf", "/etc/argoneon.conf"]
+        for config_path in poss_configs:
+            thresholds = {}
+            if os.path.exists(config_path):
+                with open(config_path, "r") as f:
+                    for line in f:
+                        if "=" in line:
+                            try:
+                                t_str, s_str = line.strip().split("=")
+                                # Ensure we convert both sides to numbers
+                                thresholds[float(t_str)] = int(float(s_str))
+                            except ValueError:
+                                continue
+
+        # 3. Determine speed (Sort highest temp to lowest)
+        speed = 0
+        # sorting ensures we check 65, then 60, then 55, then 50...
+        for t in sorted(thresholds.keys(), reverse=True):
+            if temp >= t:
+                speed = thresholds[t]
+                break
 
     # 4. Argon Safety Floor: 1-24% is always rounded to 25%
     if 0 < speed < 25:
