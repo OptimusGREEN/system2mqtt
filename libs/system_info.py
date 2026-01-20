@@ -145,8 +145,9 @@ def get_cpu(procpath=None):
 
 def get_argon_fan_speed():
     # 1. Read current CPU temperature
-    if os.path.exists("/tmp/fanspeed.txt"):
-        with open(config_path, "r") as f:
+    fanspeedfile = "/tmp/fanspeed.txt"
+    if os.path.exists(fanspeedfile):
+        with open(fanspeedfile, "r") as f:
             speed = f
     else:
         try:
