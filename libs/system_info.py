@@ -158,19 +158,26 @@ def get_argon_fan_speed():
             return 0
 
         # 2. Parse the config file
-        poss_configs = ["/etc/argononed.conf", "/etc/argoneon.conf"]
+        poss_configs = ["/etc/argoneon.conf", "/etc/argononed.conf"]
+        thresholds = {}  # Initialize outside the loop
+
         for config_path in poss_configs:
-            thresholds = {}
             if os.path.exists(config_path):
                 with open(config_path, "r") as f:
                     for line in f:
+                        # Remove whitespace and skip empty lines or comments
+                        line = line.strip()
+                        if not line or line.startswith("#"):
+                            continue
+                        
                         if "=" in line:
                             try:
-                                t_str, s_str = line.strip().split("=")
-                                # Ensure we convert both sides to numbers
+                                t_str, s_str = line.split("=")
+                                # Convert both sides to numbers
                                 thresholds[float(t_str)] = int(float(s_str))
                             except ValueError:
                                 continue
+                break # Found a file, processed it, now stop searching
 
         # 3. Determine speed (Sort highest temp to lowest)
         speed = 0
