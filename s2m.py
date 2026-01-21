@@ -173,7 +173,7 @@ class System2Mqtt(object):
                                              availability_topic=self.availability_topic, 
                                              payload_available="online",
                                              payload_not_available="offline")
-                        self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                        self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
                         logging.debug("T: {}".format(haconfig[0]))
                         logging.debug("P: {}".format(haconfig[1]))
                     else:
@@ -345,7 +345,7 @@ class System2Mqtt(object):
                                          availability_topic=self.availability_topic, 
                                          payload_available="online",
                                          payload_not_available="offline")
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             else:
                 try:
                     temps = get_temps(procpath=self.config.PROCPATH)["coretemp"]
@@ -370,7 +370,7 @@ class System2Mqtt(object):
                                          availability_topic=self.availability_topic, 
                                          payload_available="online",
                                          payload_not_available="offline")
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
         except Exception as e:
             logging.error(e, exc_info=True)
 
@@ -399,7 +399,7 @@ class System2Mqtt(object):
                                          availability_topic=self.availability_topic, 
                                          payload_available="online",
                                          payload_not_available="offline")
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             elif self.config.PVE_SYSTEM:
                 cpu = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["cpu"]
                 pct = int(float(cpu) * 100)
@@ -419,7 +419,7 @@ class System2Mqtt(object):
                                              availability_topic=self.availability_topic, 
                                              payload_available="online",
                                              payload_not_available="offline")
-                        self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                        self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             else:
                 logging.warning("Hmm, something went wrong")
         except Exception as e:
@@ -450,7 +450,7 @@ class System2Mqtt(object):
                                          availability_topic=self.availability_topic, 
                                          payload_available="online",
                                          payload_not_available="offline")
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             elif self.config.PVE_SYSTEM:
                 ram_dict = self.pve.getNodeStatus(self.config.PVE_NODE_NAME)["data"]["memory"]
                 used = float(ram_dict["used"])
@@ -471,7 +471,7 @@ class System2Mqtt(object):
                                          availability_topic=self.availability_topic, 
                                          payload_available="online",
                                          payload_not_available="offline")
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             else:
                 logging.warning("Not MacOS or PVE system")
         except Exception as e:
@@ -503,7 +503,7 @@ class System2Mqtt(object):
                                          availability_topic=self.availability_topic, 
                                          payload_available="online",
                                          payload_not_available="offline")
-                    self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                    self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             except Exception as e:
                 logging.error(e, exc_info=True)
             logging.debug("Getting hdd temperatures")
@@ -534,7 +534,7 @@ class System2Mqtt(object):
                                              availability_topic=self.availability_topic, 
                                              payload_available="online",
                                              payload_not_available="offline")
-                        self.myqtt.publish(haconfig[0], haconfig[1], retain=False)
+                        self.myqtt.publish(haconfig[0], haconfig[1], retain=True)
             except Exception as e:
                 logging.error(e, exc_info=True)
 
