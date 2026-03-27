@@ -52,9 +52,9 @@ def ha_config(discovery_topic, name, object_id, state_topic, device, entity_type
         }
     
     # Add entity-specific configurations
-    if payload_on:
+    if payload_on is not None:
         payload["payload_on"] = payload_on
-    if payload_off:
+    if payload_off is not None:
         payload["payload_off"] = payload_off
     if off_delay:
         payload["off_delay"] = off_delay
