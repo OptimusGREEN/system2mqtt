@@ -1,0 +1,46 @@
+name: Sync Docs to Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'README.md'
+  workflow_dispatch:
+
+jobs:
+  sync-wiki:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Clone wiki
+        run: |
+          git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git" wiki
+
+      - name: Sync docs to wiki
+        run: |
+          # Copy all doc pages (only if any .md files exist in docs/)
+          shopt -s nullglob
+          md_files=(docs/*.md)
+          if [ ${#md_files[@]} -gt 0 ]; then
+            cp "${md_files[@]}" wiki/
+          fi
+
+          # Build Home.md from README.md, stripping the docs/ path prefix from
+          # markdown links so that [text](docs/page.md) becomes [text](page.md)
+          sed 's|](docs/|](|g' README.md > wiki/Home.md
+
+      - name: Commit and push wiki
+        run: |
+          cd wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "docs: sync from main repo @ ${{ github.sha }}"
+          git push
