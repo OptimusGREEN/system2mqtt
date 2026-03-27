@@ -34,6 +34,8 @@ python3 run.py
 
 ## Documentation
 
+The full documentation is available in the **[GitHub Wiki](https://github.com/OptimusGREEN/system2mqtt/wiki)** as well as in the [`docs/`](docs/) folder.
+
 | Page | Description |
 |------|-------------|
 | [Getting Started](docs/getting-started.md) | Prerequisites, installation, and first run |
