@@ -30,11 +30,6 @@ class Myqtt(object):
         if self.username and self.password:
             self.client.username_pw_set(self.username, self.password)
         self.client.reconnect_delay_set(min_delay=1, max_delay=120)
-        logging.info("Attempting to connect to mqtt broker...")
-        logging.info("Host: {}".format(self.host))
-        logging.info("User: {}".format(self.username))
-        self.client.connect_async(self.host, self.port)
-        self.client.loop_start()
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect
         self.client.on_message = self.on_message
@@ -42,6 +37,11 @@ class Myqtt(object):
         self.client.on_subscribe = self.on_subscribe
         self.client.on_unsubscribe = self.on_unsubscribe
         self.client.on_log = self.on_log
+        logging.info("Attempting to connect to mqtt broker...")
+        logging.info("Host: {}".format(self.host))
+        logging.info("User: {}".format(self.username))
+        self.client.connect_async(self.host, self.port)
+        self.client.loop_start()
 
     def publish(self, topic, payload, qos=0, retain=False):
         logging.debug("topic: {}\npayload: {}".format(topic, payload))
@@ -72,7 +72,7 @@ class Myqtt(object):
                 logging.debug("Calling the 'connected_callback'")
                 self.connected_callback()
         else:
-            logging.error(return_codes[rc])
+            logging.error(return_codes.get(rc, "Connection refused – unknown error code {}".format(rc)))
 
     def on_disconnect(self, client, userdata, rc):
         logging.warning("Disconnected from broker with code ({})".format(rc))

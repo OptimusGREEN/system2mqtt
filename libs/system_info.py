@@ -34,11 +34,11 @@ def get_disks(procpath=None):
     except Exception as e:
         logging.debug(e)
     if Platform == 'Darwin':
-        excluded = ['/private/var/vm', "/Data"]
+        excluded = {'/private/var/vm', "/Data"}
         for d in disks:
             if d in excluded:
                 logging.debug("{} in exclude list, ignoring...".format(d))
-                disks.remove(d)
+        disks = [d for d in disks if d not in excluded]
         for d in disks:
             if d.mountpoint not in all_disks:
                 all_disks.append(d.mountpoint)

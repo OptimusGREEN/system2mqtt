@@ -13,6 +13,7 @@ def gethddtemp():
         for curdev in alllines:
             if curdev[0:2] == "sd" or curdev[0:2] == "hd":
                 def getSmart(smartCmd):
+                    smartctlOutRaw = ""
                     try:
                         command = os.popen(smartCmd)
                         smartctlOutRaw = command.read()

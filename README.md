@@ -1,80 +1,58 @@
 # system2mqtt
 
-**system2mqtt** is a lightweight Python utility that periodically collects system information (CPU, memory, and disk usage) and publishes it to an MQTT broker. It's designed to help you monitor your systems and integrate their status into MQTT-based home automation, dashboards, or monitoring tools.
+**system2mqtt** is a lightweight Python utility that periodically collects system information (CPU, memory, and disk usage) and publishes it to an MQTT broker. It is designed to help you monitor your systems and integrate their status into MQTT-based home automation platforms, dashboards, or monitoring tools.
 
 ## Features
 
-- Collects CPU, memory, and disk usage statistics from your system.
-- Publishes metrics to your configured MQTT broker at regular intervals.
-- Configurable via a simple configuration file.
-- Supports running directly on bare metal (Linux/macOS) or inside a Docker container.
-- Docker image available for Proxmox API access.
-- Tested on Linux and macOS.
+- Collects CPU usage, CPU temperature, memory usage, and disk usage/mount status.
+- Publishes metrics to your MQTT broker at a configurable interval.
+- **Home Assistant MQTT Discovery** — entities auto-appear in Home Assistant.
+- **Proxmox VE support** — monitor a Proxmox node via its API (ideal for Docker deployment).
+- **Argon ONE Raspberry Pi case** — fan speed and HDD temperature monitoring.
+- **User-defined MQTT callbacks** — trigger custom Python functions via MQTT messages.
+- **Built-in remote commands** — reboot, shutdown, or adjust publish rate over MQTT.
+- Automatic watchdog via `run.py` — restarts on crash, manages its own virtual environment.
+- Configurable via a simple `.env`-style configuration file.
+- Supports Linux and macOS (bare metal or Docker).
 
-## Getting Started
+## Quick Start
 
-### Prerequisites
+```sh
+# 1. Clone the repository
+git clone https://github.com/OptimusGREEN/system2mqtt.git
+cd system2mqtt
 
-- Python 3.x
-- An MQTT broker (local or remote)
+# 2. Create your configuration file
+cp s2m.conf.example s2m.conf
+# Edit s2m.conf — at minimum set COMPUTER_NAME and MQTT_HOST
 
-### Installation
+# 3. Run (auto-creates venv and installs dependencies)
+python3 run.py
+```
 
-1. **Clone the repository:**
-    ```sh
-    git clone https://github.com/OptimusGREEN/system2mqtt.git
-    cd system2mqtt
-    ```
+> See **[Getting Started](docs/getting-started.md)** for full installation instructions.
 
-2. **Configure:**
-    - Copy or edit the provided example configuration file.
-    - At minimum, set your computer name.
-    - Example configuration options:
-      ```
-      COMPUTER_NAME=MyTestComputer1                   # Required: 
+## Documentation
 
-      ##### UNCOMMENT ANY BELOW OPTIONS AS REQUIRED
+| Page | Description |
+|------|-------------|
+| [Getting Started](docs/getting-started.md) | Prerequisites, installation, and first run |
+| [Configuration Reference](docs/configuration.md) | All configuration options explained |
+| [MQTT Topics](docs/mqtt-topics.md) | Published topics, payloads, and built-in commands |
+| [Home Assistant Integration](docs/home-assistant.md) | Auto-discovery setup and entity reference |
+| [Proxmox Monitoring](docs/proxmox.md) | Monitoring a Proxmox VE node via API |
+| [Docker Deployment](docs/docker.md) | Running system2mqtt in a Docker container |
+| [Advanced Usage](docs/advanced-usage.md) | Callbacks, Argon ONE, storage filtering |
+| [Running as a Service](docs/running-as-a-service.md) | Systemd (Linux) and LaunchAgent (macOS) |
+| [Troubleshooting](docs/troubleshooting.md) | Common issues and debugging tips |
 
-      #LOG_DIR=path/to/my/logs                         ### Optional: default: ./logs
-      #LOG_FILENAME=system2mqtt.log                    ### Optional: default: system2mqtt.log 
-      #OLD_LOG_FILENAME=old_system2mqtt.log            ### Optional: default: old_system2mqtt.log 
-      #DEBUG_LOG=True                                  ### Optional: default: False
+## Minimal Configuration
 
-      #PUBLISH_PERIOD=30                               ### Optional: default: 30 (seconds)
-      #MQTT_BASE_TOPIC=system2mqtt/MyTestComputer1     ### Optional: default: system2mqtt/<COMPUTER_NAME>
-      #MQTT_HOST=192.168.0.14                          ### Optional: default: localhost
-      #MQTT_USER=myusername                            ### Optional: default: None
-      #MQTT_PASSWORD=mypassword                        ### Optional: default: None
-      ```
-
-3. **Run:**
-    ```sh
-    python3 run.py
-    ```
-
-### Docker
-
-A Docker image is available for Proxmox API access:
-
-- [Docker Hub: optimusgreen/system2mqtt](https://hub.docker.com/repository/docker/optimusgreen/system2mqtt)
-- Note: Docker image is currently only available for Proxmox API usage, not for bare metal monitoring.
-
-## Usage
-
-- The script will publish your system's metrics to the MQTT topic you configure.
-- Use your MQTT broker and dashboard/automation tool of choice to subscribe and visualize or act on these metrics.
-
-## Configuration Options
-
-- `COMPUTER_NAME`: Unique name for your system (required).
-- `LOG_DIR`: Directory for log files (optional).
-- `LOG_FILENAME`: Name of the log file (optional).
-- `OLD_LOG_FILENAME`: Name of the old log file (optional).
-- `DEBUG_LOG`: Enable debug logging (optional).
-- `PUBLISH_PERIOD`: How often to publish (in seconds, default: 30).
-- `MQTT_BASE_TOPIC`: Base MQTT topic to publish to.
-- `MQTT_HOST`: MQTT broker address (default: localhost).
-- `MQTT_USER` / `MQTT_PASSWORD`: MQTT authentication (optional).
+```ini
+# s2m.conf
+COMPUTER_NAME=MyComputer    # Required — unique name for this system
+MQTT_HOST=192.168.1.100     # Optional — defaults to localhost
+```
 
 ## License
 
@@ -82,5 +60,6 @@ This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 ## Notes
 
-- Only tested on Linux and macOS.
+- Tested on Linux and macOS.
+- Some metrics (e.g. disk temperatures via `smartctl`) may require elevated privileges.
 - Contributions and issues are welcome!

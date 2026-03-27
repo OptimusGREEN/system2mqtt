@@ -3,7 +3,6 @@
 # s2m watchdog with virtual environment management
 
 import subprocess
-from subprocess import call, check_call, PIPE, STDOUT
 from time import sleep
 import logging, os, sys
 import venv
@@ -207,43 +206,35 @@ def get_hostname():
         return socket.gethostname()
 
 def start_system2mqtt(envfile):
-    """Start the main s2m.py script in the virtual environment"""
+    """Start the main s2m.py script in the virtual environment, restarting on crash."""
     python_executable = get_python_executable()
     script_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "s2m.py")
-    
-    try:
-        hostname = get_hostname()
-        logging.info(f"Starting '{hostname}' script: '{script_path}' with config: '{envfile}'")
-        
-        # Run the script in the virtual environment
-        if envfile:
-            result = subprocess.call([python_executable, script_path, envfile])
-        else:
-            result = subprocess.call([python_executable, script_path])
-            
-        logging.info(f"Watchdog PID: {os.getpid()}")
-        
-        # If script exits normally, don't restart
-        if result == 0:
-            logging.info("Script exited normally")
-            return
-        else:
-            logging.warning(f"Script exited with code: {result}")
-            
-    except KeyboardInterrupt:
-        logging.info("Received keyboard interrupt, shutting down...")
-        return
-    except Exception as e:
-        logging.error(f"Error running script: {e}")
-    
-    # Script crashed or exited abnormally, restart it
-    logging.error(f"Script crashed! Restarting in {restart_timer} seconds")
-    handle_crash(envfile)
 
-def handle_crash(envfile):
-    """Handle script crashes by restarting after a delay"""
-    sleep(restart_timer)
-    start_system2mqtt(envfile)
+    hostname = get_hostname()
+    logging.info(f"Starting '{hostname}' script: '{script_path}' with config: '{envfile}'")
+    logging.info(f"Watchdog PID: {os.getpid()}")
+
+    while True:
+        try:
+            if envfile:
+                result = subprocess.call([python_executable, script_path, envfile])
+            else:
+                result = subprocess.call([python_executable, script_path])
+
+            if result == 0:
+                logging.info("Script exited normally")
+                return
+            else:
+                logging.warning(f"Script exited with code: {result}")
+
+        except KeyboardInterrupt:
+            logging.info("Received keyboard interrupt, shutting down...")
+            return
+        except Exception as e:
+            logging.error(f"Error running script: {e}")
+
+        logging.error(f"Script crashed! Restarting in {restart_timer} seconds")
+        sleep(restart_timer)
 
 # Global variables
 restart_timer = 2

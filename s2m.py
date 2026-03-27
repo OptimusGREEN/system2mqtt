@@ -102,10 +102,15 @@ class System2Mqtt(object):
 
     def wait(self):
         logging.debug("...")
-        while not self.myqtt.client.is_connected():
-            logging.debug("Trying to connect...")
-            time.sleep(2)
-        self.start_publish_loop()
+        while True:
+            while not self.myqtt.client.is_connected():
+                logging.debug("Trying to connect...")
+                time.sleep(2)
+            self.start_publish_loop()
+            if not self.auto_reconnect:
+                break
+            logging.info("Reconnecting...")
+        logging.warning("Main Loop Ended!")
 
     def start_publish_loop(self):
         logging.info("Publish period is set to {} seconds.".format(self.publish_period))
@@ -113,11 +118,6 @@ class System2Mqtt(object):
             logging.debug("mqtt flag: {}".format(self.myqtt.connected_flag))
             self.publish_all()
             time.sleep(int(self.publish_period))
-        if self.auto_reconnect:
-            logging.info("Reconnecting...")
-            self.wait()
-            self.myqtt.client.reconnect()
-        logging.warning("Main Loop Ended!")
 
     def publish_mount_state(self):
         logging.debug("")
@@ -239,8 +239,8 @@ class System2Mqtt(object):
                         label = d.split("/")[-1]
                     if self.config.STORAGE_INCLUDE:
                         include = ast.literal_eval(self.config.STORAGE_INCLUDE.lower())
-                        print(include)
-                        print(type(include))
+                        logging.debug(include)
+                        logging.debug(type(include))
                         if label.lower() in include:
                             pass
                         else:
